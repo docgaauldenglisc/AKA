@@ -46,7 +46,9 @@ static void main_window(GtkApplication *app, gpointer data) {
             GtkWidget *main_grid;
                 GtkWidget *top_box;
                     GtkWidget *new_contact_button; 
-                        GtkWidget *contact_search_entry;
+                    GtkWidget *refresh_button; 
+                        GtkWidget *refresh_icon;
+                    GtkWidget *contact_search_entry;
                 GtkWidget *scrolled_part;
                     GtkWidget *bottom_box;
 
@@ -58,6 +60,7 @@ static void main_window(GtkApplication *app, gpointer data) {
     //Set up scrolled_part
     scrolled_part = gtk_scrolled_window_new(NULL, NULL);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_part), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+
     //Set up main_box
     main_grid = gtk_grid_new(); 
 
@@ -72,9 +75,15 @@ static void main_window(GtkApplication *app, gpointer data) {
     contact_search_entry = gtk_search_entry_new();
     gtk_widget_set_hexpand(contact_search_entry, TRUE);
 
+    //Set up refresh_button
+    refresh_button = gtk_button_new();
+    refresh_icon = gtk_image_new_from_icon_name("view-refresh-symbolic", GTK_ICON_SIZE_BUTTON);
+    gtk_button_set_image(GTK_BUTTON(refresh_button), refresh_icon);
+
     //Add Widgets to top_box
     gtk_container_add(GTK_CONTAINER(top_box), new_contact_button);
     gtk_container_add(GTK_CONTAINER(top_box), contact_search_entry);
+    gtk_container_add(GTK_CONTAINER(top_box), refresh_button);
 
     //Set up bottom_box
     bottom_box = gtk_list_box_new();
