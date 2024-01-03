@@ -1,0 +1,3 @@
+/home/me/fblawork/AKA/build/CMakeFiles/AKA.dir
+/home/me/fblawork/AKA/build/CMakeFiles/edit_cache.dir
+/home/me/fblawork/AKA/build/CMakeFiles/rebuild_cache.dir
