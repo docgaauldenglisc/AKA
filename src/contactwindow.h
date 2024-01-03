@@ -39,6 +39,12 @@ static void contact_window(GtkApplication *app, gpointer data) {
     entries->name_entry     = gtk_entry_new();
     labels.number_label     = gtk_label_new("Number");
     entries->number_entry   = gtk_entry_new();
+    labels.email_label 	    = gtk_label_new("Email");
+    entries->email_entry    = gtk_entry_new();
+    labels.org_label	    = gtk_label_new("Organization");
+    entries->org_entry      = gtk_entry_new();
+    labels.address_label    = gtk_label_new("Address");
+    entries->address_entry  = gtk_entry_new();
 
     //Set up enter_button
     enter_button = gtk_button_new_with_label("Save");
@@ -48,9 +54,20 @@ static void contact_window(GtkApplication *app, gpointer data) {
     //                                                                  x, y, w, h
     gtk_grid_attach(GTK_GRID(new_contact_grid), labels.name_label,      1, 1, 1, 1);
     gtk_grid_attach(GTK_GRID(new_contact_grid), entries->name_entry,    1, 2, 1, 1);
+
     gtk_grid_attach(GTK_GRID(new_contact_grid), labels.number_label,    2, 1, 1, 1);
     gtk_grid_attach(GTK_GRID(new_contact_grid), entries->number_entry,  2, 2, 1, 1);
-    gtk_grid_attach(GTK_GRID(new_contact_grid), enter_button,           3, 3, 1, 1);
+
+    gtk_grid_attach(GTK_GRID(new_contact_grid), labels.email_label,	3, 1, 1, 1);
+    gtk_grid_attach(GTK_GRID(new_contact_grid), entries->email_entry,	3, 2, 1, 1);
+    
+    gtk_grid_attach(GTK_GRID(new_contact_grid), labels.org_label,	1, 3, 1, 1);
+    gtk_grid_attach(GTK_GRID(new_contact_grid), entries->org_entry,     1, 4, 1, 1);
+
+    gtk_grid_attach(GTK_GRID(new_contact_grid), labels.address_label,   2, 3, 1, 1);
+    gtk_grid_attach(GTK_GRID(new_contact_grid), entries->address_entry, 2, 4, 1, 1);
+
+    gtk_grid_attach(GTK_GRID(new_contact_grid), enter_button,           4, 5, 1, 1);
 
     //Present window
     gtk_container_add(GTK_CONTAINER(new_contact_window), new_contact_grid);
