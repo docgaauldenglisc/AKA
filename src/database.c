@@ -55,23 +55,16 @@ int verify_db() {
         fprintf(stderr, "Can't open database: &s\n", sqlite3_errmsg(db));
     }
 
-//    rc = sqlite3_exec(db, ".schema", callback, 0, &zErrMsg);
-//    if (rc != SQLITE_OK) {
-//        fprintf(stderr, "Problem with SQL: %s\n", zErrMsg);
-//        sqlite3_free(zErrMsg);
-//    }
-
     const char *make_contact_table =    "CREATE TABLE IF NOT EXISTS Contacts (\n"  
 //                                      "col"      "type"  "attributes"
                                         "ID "      "INT "  "PRIMARY KEY NOT NULL,\n" 
                                         "NAME "    "TEXT " "NOT NULL,\n" 
-                                        "PHONE "   "TEXT " "\n" 
+                                        "NUMBER "  "TEXT " ",\n" 
+                                        "EMAIL "   "TEXT " ",\n" 
+                                        "ORG "     "TEXT " ",\n" 
+                                        "ADDRESS " "TEXT " "\n" 
                                         ");" ;
     
-//    if (strcmp(make_contact_table, current_schema) != 0) {
-//        fix_schema();
-//    }  
-
     rc = sqlite3_exec(db, make_contact_table, callback, 0, &zErrMsg);
     if (rc != SQLITE_OK) {
         fprintf(stderr, "Problem with SQL: %s\n", zErrMsg);
@@ -107,16 +100,28 @@ void write_to_file(contact_chars chars) {
     sqlite3_stmt *insert;
     const char *make_new_contact =  "INSERT INTO Contacts(" \
                                      "ID," \
-                                     "NAME)" \
+                                     "NAME," \
+                                     "NUMBER," \
+                                     "EMAIL," \
+                                     "ORG," \
+                                     "ADDRESS)" \
                                      "VALUES(" \
+                                     "?," \
+                                     "?," \
+                                     "?," \
+                                     "?," \
                                      "?," \
                                      "?);";
     if(sqlite3_prepare_v2(db, make_new_contact, -1, &insert, NULL) != SQLITE_OK) {
         fprintf(stderr, "Issue with statement: %s\n", sqlite3_errmsg(db));
         return;
     }
-    sqlite3_bind_int(insert, 1, ++maxid);
-    sqlite3_bind_text(insert, 2, chars.name, -1, SQLITE_STATIC);
+    sqlite3_bind_int(insert,    1, ++maxid);
+    sqlite3_bind_text(insert,   2, chars.name   , -1, SQLITE_STATIC);
+    sqlite3_bind_text(insert,   3, chars.number , -1, SQLITE_STATIC);
+    sqlite3_bind_text(insert,   4, chars.email  , -1, SQLITE_STATIC);
+    sqlite3_bind_text(insert,   5, chars.org    , -1, SQLITE_STATIC);
+    sqlite3_bind_text(insert,   6, chars.address, -1, SQLITE_STATIC);
 
     if (sqlite3_step(insert) != SQLITE_DONE) {
         fprintf(stderr, "Issue with statement: %s\n", sqlite3_errmsg(db));
@@ -155,7 +160,7 @@ int get_max_id() {
 
 }
 
-void get_text_from_col(char col[], int id, char *found_text) {
+void get_text_from_col(char col[], int id, char *text_return) {
     
     sqlite3 *db;
     char *zErrMsg = 0;
@@ -184,7 +189,7 @@ void get_text_from_col(char col[], int id, char *found_text) {
     }
     else {
         fprintf(stdout, "%s\n", text);
-        strncpy(found_text, text, 20); 
+        strncpy(text_return, text, sizeof(text_return)); 
     }
 
     sqlite3_close(db);

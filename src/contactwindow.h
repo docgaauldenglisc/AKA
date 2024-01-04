@@ -4,7 +4,11 @@ static void take_user_input(GtkWidget *entry, gpointer contact_data) {
     entries *user_in = (entries*) contact_data;
     contact_chars chars;
 
-    chars.name = gtk_entry_get_text(GTK_ENTRY(user_in->name_entry));
+    chars.name      = gtk_entry_get_text(GTK_ENTRY(user_in->name_entry));
+    chars.number    = gtk_entry_get_text(GTK_ENTRY(user_in->number_entry));
+    chars.org       = gtk_entry_get_text(GTK_ENTRY(user_in->org_entry));
+    chars.email     = gtk_entry_get_text(GTK_ENTRY(user_in->email_entry));
+    chars.address   = gtk_entry_get_text(GTK_ENTRY(user_in->address_entry));
     
     if ((strcmp(chars.name, "")) == 0) {
         printf("Add a name\n");
