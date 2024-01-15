@@ -173,11 +173,7 @@ int get_id(int mode, sqlite3 *db) {
         return id_val;
 }
 
-<<<<<<< HEAD
 void get_from_col_and_row(char col[], int row, char *text_return) {
-=======
-void get_text_from_col(char col[], int id, char *text_return) {
->>>>>>> 55c0678cae608418de715457ffc49321edd84b06
     
     sqlite3 *db;
     char *zErrMsg = 0;
@@ -205,13 +201,8 @@ void get_text_from_col(char col[], int id, char *text_return) {
         sqlite3_free(zErrMsg);
     }
     else {
-<<<<<<< HEAD
         fprintf(stdout, "%s: %s\n", col, text);
         strncpy(text_return, text, 50); 
-=======
-        fprintf(stdout, "%s\n", text);
-        strncpy(text_return, text, sizeof(text_return)); 
->>>>>>> 55c0678cae608418de715457ffc49321edd84b06
     }
 
     sqlite3_close(db);
