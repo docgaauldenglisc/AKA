@@ -3,12 +3,14 @@
 #include <sqlite3.h>
 #include <stdlib.h>
 #include <gtk/gtk.h>
+#include <stdbool.h>
 
 #include "conoptions.h"
 #include "database.h"
 
-int max_id_val = 0;
+int id_val = 0;
 
+// ----- CALLBACK FUNCTIONS ----- //
 static int callback(void *data, int argc, char **argv, char **az_col_name) {
     for (int i = 0; i < argc; ++i) {
         printf("%s = %s\n", az_col_name[i], argv[i] ? argv[i] : "NULL");
@@ -19,14 +21,15 @@ static int callback(void *data, int argc, char **argv, char **az_col_name) {
 
 static int id_search(void *data, int argc, char **argv, char **az_col_name) {
     if (argc > 0 && argv[0]) {
-        max_id_val = atoi(argv[0]);
-        printf("%i\n", max_id_val);
+        id_val = atoi(argv[0]);
+        printf("%i in database\n", id_val);
+        return 0;
     }
     else {
-        printf("Failed to get id\n");
+        fprintf(stderr, "Failed to get number\n");
+        return -1;
     }
     return 0;
-    //TODO understand this
 }
 
 static int get_text_from_col_callback(void *data, int argc, char **argv, char **az_col_name) { 
@@ -43,6 +46,7 @@ static int get_text_from_col_callback(void *data, int argc, char **argv, char **
 
 }
 
+// ----- REGULAR FUNCTIONS ----- //
 int verify_db() {
 
     // Make the contact database
@@ -55,23 +59,16 @@ int verify_db() {
         fprintf(stderr, "Can't open database: &s\n", sqlite3_errmsg(db));
     }
 
-//    rc = sqlite3_exec(db, ".schema", callback, 0, &zErrMsg);
-//    if (rc != SQLITE_OK) {
-//        fprintf(stderr, "Problem with SQL: %s\n", zErrMsg);
-//        sqlite3_free(zErrMsg);
-//    }
-
     const char *make_contact_table =    "CREATE TABLE IF NOT EXISTS Contacts (\n"  
 //                                      "col"      "type"  "attributes"
                                         "ID "      "INT "  "PRIMARY KEY NOT NULL,\n" 
                                         "NAME "    "TEXT " "NOT NULL,\n" 
-                                        "PHONE "   "TEXT " "\n" 
+                                        "NUMBER "  "TEXT " ",\n" 
+                                        "EMAIL "   "TEXT " ",\n" 
+                                        "ORG "     "TEXT " ",\n" 
+                                        "ADDRESS " "TEXT " "\n" 
                                         ");" ;
     
-//    if (strcmp(make_contact_table, current_schema) != 0) {
-//        fix_schema();
-//    }  
-
     rc = sqlite3_exec(db, make_contact_table, callback, 0, &zErrMsg);
     if (rc != SQLITE_OK) {
         fprintf(stderr, "Problem with SQL: %s\n", zErrMsg);
@@ -102,21 +99,33 @@ void write_to_file(contact_chars chars) {
         fprintf(stderr, "Can't open database: &s\n", sqlite3_errmsg(db));
     }
 
-    maxid = get_max_id(db);
+    maxid = get_id(1, db);
 
     sqlite3_stmt *insert;
     const char *make_new_contact =  "INSERT INTO Contacts(" \
                                      "ID," \
-                                     "NAME)" \
+                                     "NAME," \
+                                     "NUMBER," \
+                                     "EMAIL," \
+                                     "ORG," \
+                                     "ADDRESS)" \
                                      "VALUES(" \
+                                     "?," \
+                                     "?," \
+                                     "?," \
+                                     "?," \
                                      "?," \
                                      "?);";
     if(sqlite3_prepare_v2(db, make_new_contact, -1, &insert, NULL) != SQLITE_OK) {
         fprintf(stderr, "Issue with statement: %s\n", sqlite3_errmsg(db));
         return;
     }
-    sqlite3_bind_int(insert, 1, ++maxid);
-    sqlite3_bind_text(insert, 2, chars.name, -1, SQLITE_STATIC);
+    sqlite3_bind_int(insert,    1, ++maxid);
+    sqlite3_bind_text(insert,   2, chars.name   , -1, SQLITE_STATIC);
+    sqlite3_bind_text(insert,   3, chars.number , -1, SQLITE_STATIC);
+    sqlite3_bind_text(insert,   4, chars.email  , -1, SQLITE_STATIC);
+    sqlite3_bind_text(insert,   5, chars.org    , -1, SQLITE_STATIC);
+    sqlite3_bind_text(insert,   6, chars.address, -1, SQLITE_STATIC);
 
     if (sqlite3_step(insert) != SQLITE_DONE) {
         fprintf(stderr, "Issue with statement: %s\n", sqlite3_errmsg(db));
@@ -129,33 +138,42 @@ void write_to_file(contact_chars chars) {
 
 }
 
-int get_max_id() {
+int get_id(int mode, sqlite3 *db) {
     
-    sqlite3 *db;
-    int rc;
-
-    rc = sqlite3_open("Contacts.db", &db);
-
     char *zErrMsg = 0;
-    const char *get_most_recent_id = "SELECT MAX(ID) FROM Contacts;";
-
-    rc = sqlite3_exec(db, get_most_recent_id, id_search, 0, &zErrMsg);
+    char query[100];
+    int rc;
     
-    if (rc != SQLITE_OK) {
-        fprintf(stderr, "Error running command: %s\n", zErrMsg);
-        sqlite3_free(zErrMsg);
-        return -1;
+    if (db == NULL) {
+        sqlite3 *replacement_db;
+        rc = sqlite3_open("Contacts.db", &replacement_db);
     }
     else {
-        printf("Max ID val: %d\n", max_id_val);
-        return max_id_val;
+        rc = sqlite3_open("Contacts.db", &db);
+    }
+    
+    strcpy(query, "SELECT \0");
+
+    if (mode == 1) {
+        strncat(query, "MAX(ID) ", 10);
+    }
+    else if (mode == 0) {
+        strncat(query, "ID ", 10);
+    }
+    else {
+        strncat(query, "DIDNT WORK AAAAAAAA ", 10);
     }
 
-    sqlite3_close(db);
+    strncat(query, "FROM Contacts;\0", 20);
 
+    rc = sqlite3_exec(db, query, id_search, 0, &zErrMsg);
+    
+        printf("Max ID val: %d\n", id_val);
+        sqlite3_close(db);
+        return id_val;
 }
 
-void get_text_from_col(char col[], int id, char *found_text) {
+void get_from_col_and_row(char col[], int row, char *text_return) {
     
     sqlite3 *db;
     char *zErrMsg = 0;
@@ -169,7 +187,7 @@ void get_text_from_col(char col[], int id, char *found_text) {
         fprintf(stderr, "DATABASE STUCK! : %s\n", sqlite3_errmsg(db));
     }
     
-    snprintf(istr, sizeof(istr), "%i", id);
+    snprintf(istr, sizeof(istr), "%i", row);
 
     strcpy(query, "SELECT "); 
     strncat(query, col, 10);
@@ -183,8 +201,8 @@ void get_text_from_col(char col[], int id, char *found_text) {
         sqlite3_free(zErrMsg);
     }
     else {
-        fprintf(stdout, "%s\n", text);
-        strncpy(found_text, text, 20); 
+        fprintf(stdout, "%s: %s\n", col, text);
+        strncpy(text_return, text, 50); 
     }
 
     sqlite3_close(db);
