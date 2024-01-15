@@ -1,42 +1,83 @@
+enum {
+    COL_ID = 0,
+    COL_NAME,
+    COL_NUMBER,
+    COL_EMAIL,
+    COL_ORG,
+    COL_ADDRESS,
+    NUM_COLS
+};
 
-void list_contacts(GtkWidget *list_box) {
+static GtkTreeModel* create_model() {
 
-    int maxid = get_max_id();
+        GtkTreePath *path;
+            GtkTreeIter iter;
 
-    for (int i = 0; i < maxid; ++i) {
+    int max = get_id(1);
 
-        GtkWidget *contact_list_row;
-            GtkWidget *list_row_grid;
-                GtkWidget *contact_name_label;
-                GtkWidget *contact_phone_number;
-                GtkWidget *empty_space[1];
+    GtkListStore *store = gtk_list_store_new(NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 
-        contact_list_row = gtk_list_box_row_new();
-        list_row_grid = gtk_grid_new();
-
+    for (int i = 0; i < max; i++) {
+        char id[50];
         char name[50];
-        char phone_number[] = "(509) 8675-309\n";
+        char number[50];
+        char email[50];
+        char org[50];
+        char address[50];
 
-        get_text_from_col("NAME", (i + 1), name);
+        get_from_col_and_row("ID"    , (i + 1), id);
+        get_from_col_and_row("NAME"    , (i + 1), name);
+        get_from_col_and_row("NUMBER"  , (i + 1), number);
+        get_from_col_and_row("EMAIL"   , (i + 1), email);
+        get_from_col_and_row("ORG"     , (i + 1), org);
+        get_from_col_and_row("ADDRESS" , (i + 1), address);
 
-        fprintf(stdout, "Gotten name of: %s\n", name);
+        printf("%i Gotten name of: %s\n", (i + 1), name);
+    
+        gtk_list_store_append(GTK_LIST_STORE(store), &iter);
+        gtk_list_store_set(store, &iter, COL_ID, id, COL_NAME, name, COL_NUMBER, number, COL_EMAIL, email, COL_ORG, org, COL_ADDRESS, address, -1);
 
-        contact_name_label = gtk_label_new(name);
-        contact_phone_number = gtk_label_new(phone_number);
-        empty_space[0] = gtk_label_new(" ");
+    }
+    return GTK_TREE_MODEL(store);
 
-        gtk_widget_set_hexpand(empty_space[0], TRUE);
+}
 
-        //                                                                        x, y, w, h
-        gtk_grid_attach(GTK_GRID(list_row_grid), contact_name_label             , 1, 1, 1, 1);
-        gtk_grid_attach(GTK_GRID(list_row_grid), empty_space[0]                 , 2, 1, 1, 1);
-        gtk_grid_attach(GTK_GRID(list_row_grid), contact_phone_number           , 3, 1, 1, 1);
+static GtkWidget* create_view() {
 
-        gtk_container_add(GTK_CONTAINER(contact_list_row), list_row_grid);
+    GtkCellRenderer *renderer;
+    GtkWidget *view = gtk_tree_view_new();
 
-        gtk_list_box_insert(GTK_LIST_BOX(list_box), contact_list_row, -1);
+    renderer = gtk_cell_renderer_text_new();
+    gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "ID"       , renderer, "text", COL_ID, NULL);
+    renderer = gtk_cell_renderer_text_new();
+    gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Name"     , renderer, "text", COL_NAME, NULL);
+    renderer = gtk_cell_renderer_text_new();
+    gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Number"   , renderer, "text", COL_NUMBER, NULL);
+    renderer = gtk_cell_renderer_text_new();
+    gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Email"    , renderer, "text", COL_EMAIL, NULL);
+    renderer = gtk_cell_renderer_text_new();
+    gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Org"      , renderer, "text", COL_ORG, NULL);
+    renderer = gtk_cell_renderer_text_new();
+    gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Address"  , renderer, "text", COL_ADDRESS, NULL);
+    
+    GtkTreeModel *model = create_model();
+    gtk_tree_view_set_model(GTK_TREE_VIEW(view), model);
 
-    }    
+    g_object_unref(model);
+
+    return view;
+
+}
+
+static void refresh(GtkWidget *not_used, GtkTreeView *view) {
+
+    GtkTreeModel *model = create_model();
+
+    if (gtk_tree_view_get_model(view) != NULL) {
+        g_object_unref(gtk_tree_view_get_model(view));
+    }
+
+    gtk_tree_view_set_model(view, model);
 
 }
 
@@ -49,59 +90,50 @@ static void main_window(GtkApplication *app, gpointer data) {
                     GtkWidget *refresh_button; 
                         GtkWidget *refresh_icon;
                     GtkWidget *contact_search_entry;
-                GtkWidget *scrolled_part;
+                GtkWidget *list_scroll;
                     GtkWidget *bottom_box;
+                        GtkWidget *view;
+                GtkWidget *scrolled_contact;
+                    GtkWidget *side_box;
 
-    //Set up main_window
-    main_window = gtk_application_window_new(app);
+    main_window             = gtk_application_window_new(app);
+    list_scroll             = gtk_scrolled_window_new(NULL, NULL);
+    main_grid               = gtk_grid_new();
+    top_box                 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+    new_contact_button      = gtk_button_new_with_label("+");
+    contact_search_entry    = gtk_search_entry_new();
+    refresh_button          = gtk_button_new();
+    refresh_icon            = gtk_image_new_from_icon_name("view-refresh-symbolic", GTK_ICON_SIZE_BUTTON);
+    bottom_box              = gtk_list_box_new();
+    scrolled_contact        = gtk_scrolled_window_new(NULL, NULL);
+    view                    = create_view();
+    
+    gtk_tree_view_set_model(GTK_TREE_VIEW(view), create_model());
+
     gtk_window_set_title(GTK_WINDOW(main_window), "AKA");
     gtk_window_set_default_size(GTK_WINDOW(main_window), 1280, 720);
     
-    //Set up scrolled_part
-    scrolled_part = gtk_scrolled_window_new(NULL, NULL);
-    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_part), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(list_scroll), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
-    //Set up main_box
-    main_grid = gtk_grid_new(); 
-
-    //Set up top_box
-    top_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-    
-    //Set up new_contact_button
-    new_contact_button = gtk_button_new_with_label("+");
     g_signal_connect(new_contact_button, "clicked", G_CALLBACK(contact_window), NULL);
+
+    g_signal_connect(refresh_button, "clicked", G_CALLBACK(refresh), view);
     
-    //Set up contact_search_bar
-    contact_search_entry = gtk_search_entry_new();
     gtk_widget_set_hexpand(contact_search_entry, TRUE);
 
-    //Set up refresh_button
-    refresh_button = gtk_button_new();
-    refresh_icon = gtk_image_new_from_icon_name("view-refresh-symbolic", GTK_ICON_SIZE_BUTTON);
     gtk_button_set_image(GTK_BUTTON(refresh_button), refresh_icon);
 
-    //Add Widgets to top_box
     gtk_container_add(GTK_CONTAINER(top_box), new_contact_button);
     gtk_container_add(GTK_CONTAINER(top_box), contact_search_entry);
     gtk_container_add(GTK_CONTAINER(top_box), refresh_button);
 
-    //Set up bottom_box
-    bottom_box = gtk_list_box_new();
-    
-    //Set up the list rows 
-   
-    list_contacts(bottom_box);
+    gtk_container_add(GTK_CONTAINER(bottom_box), view);
 
-    //Add sub-boxes to main_box
-    gtk_container_add(GTK_CONTAINER(scrolled_part), bottom_box);
-    //gtk_container_add(GTK_CONTAINER(main_box), top_box);
+    gtk_container_add(GTK_CONTAINER(list_scroll), bottom_box);
     gtk_grid_attach(GTK_GRID(main_grid), top_box, 1, 1, 1, 1);
-    //gtk_container_add(GTK_CONTAINER(main_box), scrolled_window);
-    gtk_grid_attach(GTK_GRID(main_grid), scrolled_part, 1, 2, 1, 1);
-    gtk_widget_set_vexpand(scrolled_part, TRUE);
+    gtk_grid_attach(GTK_GRID(main_grid), list_scroll, 1, 2, 1, 1);
+    gtk_widget_set_vexpand(list_scroll, TRUE);
 
-    //Present the stuff
     gtk_container_add(GTK_CONTAINER(main_window), main_grid);
     gtk_widget_show_all(main_window);
-
 }

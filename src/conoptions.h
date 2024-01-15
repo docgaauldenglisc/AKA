@@ -19,7 +19,7 @@ typedef struct contact_entry_widgets {
     GtkWidget *org_entry;
     GtkWidget *address_entry;
 
-} entries;
+} EntryWidgets;
 
 typedef struct user_input{
     
