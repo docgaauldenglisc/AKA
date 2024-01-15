@@ -8,7 +8,7 @@ pkg_check_modules(SQLite3 REQUIRED sqlite3)
 
 include_directories(${GTK3_INCLUDE_DIRS} ${SQLITE3_INCLUDE_DIRS})
 
-set(SOURCES main.c config.c database.c conoptions.c)
+set(SOURCES main.c config.c database.c conoptions.c gui.c)
 
 add_executable(AKA ${SOURCES})
 
