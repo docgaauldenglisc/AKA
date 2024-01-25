@@ -23,11 +23,11 @@ typedef struct contact_entry_widgets {
 
 typedef struct user_input{
     
-     char *name;
-     char *number;
-     char *email;
-     char *org;
-     char *address;
+    char *name;
+    char *number;
+    char *email;
+    char *org;
+    char *address;
 
 } contact_chars;
 

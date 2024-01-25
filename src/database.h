@@ -1,8 +1,6 @@
 #ifndef DATABASE_H
 #define DATABASE_H
 
-extern int id_val;
-
 // ---- CALLBACK FUNCTIONS ----- //
 static int id_search(void *data, int argc, char **argv, char **az_col_name);
 static int callback(void *data, int argc, char **argv, char **az_col_name);

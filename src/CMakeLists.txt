@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 project(AKA)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS true)
+
 find_package(PkgConfig REQUIRED)
 
 pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
