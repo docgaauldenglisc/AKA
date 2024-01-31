@@ -2,10 +2,11 @@
 #include <string.h>
 #include <gtk/gtk.h>
 
+#include "gui.h"
 #include "conoptions.h"
 #include "database.h"
 
-#define WINDOW_WIDTH 720
+#define WINDOW_WIDTH 1280 
 #define WINDOW_HEIGHT 720
 
 EntryWidgets entries;
@@ -52,6 +53,8 @@ static void take_user_input() {
     }
     else {
         write_to_file(chars); 
+        refresh();
+        
     }
 }
 
@@ -98,7 +101,9 @@ static void new_contact_frame() {
 static GtkTreeModel *create_model() {
     GtkTreeIter iter;
 
-    int max = get_id();
+    int max = get_max_id();
+
+    printf("%d\n", get_max_id());
 
     GtkListStore *store = gtk_list_store_new(NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 
@@ -110,7 +115,7 @@ static GtkTreeModel *create_model() {
         char org[50];
         char address[50];
 
-        get_from_col_and_row("ID"    , (i + 1), id);
+        get_from_col_and_row("ID"      , (i + 1), id);
         get_from_col_and_row("NAME"    , (i + 1), name);
         get_from_col_and_row("NUMBER"  , (i + 1), number);
         get_from_col_and_row("EMAIL"   , (i + 1), email);
@@ -150,7 +155,7 @@ static GtkWidget *create_view() {
     return view;
 }
 
-static void refresh(GtkWidget *not_used, GtkTreeView *view) {
+static void refresh() {
     GtkTreeModel *model = create_model();
 
     if (gtk_tree_view_get_model(view) != NULL) {
@@ -164,7 +169,7 @@ static void change_view_frame_size() {
     GtkAllocation allocation;
     gtk_widget_get_allocation(window, &allocation);
 
-    int min_width = (int)(0.55 * allocation.width);    
+    int min_width = (int)(0.45 * allocation.width);    
 
     gtk_widget_set_size_request(GTK_WIDGET(view_frame), min_width, -1);
 }
@@ -185,12 +190,14 @@ static void main_window(GtkApplication *app) {
     list_box = gtk_list_box_new();
     view = create_view();
 
+    refresh(NULL, GTK_TREE_VIEW(view));
+
     gtk_widget_set_hexpand(new_contact_button, FALSE);
     gtk_box_pack_start(GTK_BOX(o_box), new_contact_button, FALSE, FALSE, 0); 
 
     g_signal_connect(new_contact_button, "clicked", G_CALLBACK(new_contact_frame), NULL);
     // A little complicated, but it should be fine.
-    // The view frame should be 55% of the width of the window at all times.
+    // The view frame should be 45% of the width of the window at all times.
     g_signal_connect(window, "size-allocate", G_CALLBACK(change_view_frame_size), view_frame);
 
     gtk_button_set_image(GTK_BUTTON(refresh_button), refresh_icon);

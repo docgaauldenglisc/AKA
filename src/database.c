@@ -22,7 +22,6 @@ static int callback(void *data, int argc, char **argv, char **az_col_name) {
 static int id_search(void *data, int argc, char **argv, char **az_col_name) {
     if (argc > 0 && argv[0]) {
         id_val = atoi(argv[0]);
-        printf("%i in database\n", id_val);
         return 0;
     }
     else {
@@ -99,7 +98,8 @@ void write_to_file(contact_chars chars) {
         fprintf(stderr, "Can't open database: &s\n", sqlite3_errmsg(db));
     }
 
-    maxid = get_id(1, db);
+    maxid = get_max_id();
+    printf("Max: %d\n", maxid);
 
     sqlite3_stmt *insert;
     const char *make_new_contact =  "INSERT INTO Contacts(" \
@@ -138,12 +138,13 @@ void write_to_file(contact_chars chars) {
 
 }
 
-int get_id(int mode, sqlite3 *db) {
-    
+int get_max_id() {
+
     char *zErrMsg = 0;
     char query[100];
     int rc;
-    
+    sqlite3 *db;
+
     if (db == NULL) {
         sqlite3 *replacement_db;
         rc = sqlite3_open("Contacts.db", &replacement_db);
@@ -151,26 +152,18 @@ int get_id(int mode, sqlite3 *db) {
     else {
         rc = sqlite3_open("Contacts.db", &db);
     }
-    
+
     strcpy(query, "SELECT \0");
 
-    if (mode == 1) {
-        strncat(query, "MAX(ID) ", 10);
-    }
-    else if (mode == 0) {
-        strncat(query, "ID ", 10);
-    }
-    else {
-        strncat(query, "DIDNT WORK AAAAAAAA ", 10);
-    }
+    strncat(query, "MAX(ID) ", 10);
 
     strncat(query, "FROM Contacts;\0", 20);
 
     rc = sqlite3_exec(db, query, id_search, 0, &zErrMsg);
-    
-        printf("Max ID val: %d\n", id_val);
-        sqlite3_close(db);
-        return id_val;
+
+    printf("Max ID val: %d\n", id_val);
+    sqlite3_close(db);
+    return id_val;
 }
 
 void get_from_col_and_row(char col[], int row, char *text_return) {
