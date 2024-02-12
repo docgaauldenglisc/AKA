@@ -55,6 +55,7 @@ static void take_user_input() {
     chars.org       = gtk_entry_get_text(GTK_ENTRY(entries.org_entry));
     chars.email     = gtk_entry_get_text(GTK_ENTRY(entries.email_entry));
     chars.address   = gtk_entry_get_text(GTK_ENTRY(entries.address_entry));
+    chars.photoloc  = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(entries.photoloc_entry)); 
     
     if ((strcmp(chars.name, "")) == 0) {
         printf("Add a name\n");
@@ -68,6 +69,8 @@ static void take_user_input() {
 static void open_contact_view_frame(GtkTreeSelection *selection, gpointer data) {
     GtkTreeIter iter;
     GtkTreeModel *model;
+    char photoloc[50];
+    gchar *id;
     gchar *name;
     gchar *number;
     gchar *email;
@@ -80,10 +83,12 @@ static void open_contact_view_frame(GtkTreeSelection *selection, gpointer data) 
     GtkWidget *email_label;
     GtkWidget *org_label;
     GtkWidget *address_label;
+    GtkWidget *photo;
     
     remove_child_from(view_frame);
 
     if (gtk_tree_selection_get_selected(selection, &model, &iter)) {
+        gtk_tree_model_get(model, &iter, COL_ID     , &id       , -1);
         gtk_tree_model_get(model, &iter, COL_NAME   , &name     , -1);
         gtk_tree_model_get(model, &iter, COL_NUMBER , &number   , -1);
         gtk_tree_model_get(model, &iter, COL_EMAIL  , &email    , -1);
@@ -93,28 +98,43 @@ static void open_contact_view_frame(GtkTreeSelection *selection, gpointer data) 
         gtk_frame_set_label(GTK_FRAME(view_frame), name);
 
         grid = gtk_grid_new();
+        get_from_col_and_row("PHOTOLOC", atoi(id), photoloc);
+        printf("%s\n", photoloc);
+        if (photoloc[0] != NULL) {
+            printf("Something in here\n");
+        }
+        photo = gtk_image_new_from_file(photoloc);
+        GdkPixbuf *buf = gtk_image_get_pixbuf(GTK_IMAGE(photo));
+        int width = gdk_pixbuf_get_width(buf);
+        int height = gdk_pixbuf_get_height(buf);
+        double scale_width = 500.0 / width;
+        double scale_height = 500.0 / height;
+        double scale_factor = MIN(scale_width, scale_height);
+        GdkPixbuf *scaled_buf = gdk_pixbuf_scale_simple(buf, width * scale_factor, height * scale_factor, GDK_INTERP_BILINEAR);
+        photo = gtk_image_new_from_pixbuf(scaled_buf);
 
-        name_label      = gtk_label_new("name");
-        number_label    = gtk_label_new("number");
-        email_label     = gtk_label_new("email");
-        org_label	    = gtk_label_new("org");
-        address_label   = gtk_label_new("address");
+        name_label      = gtk_label_new("Name: ");
+        number_label    = gtk_label_new("Number: ");
+        email_label     = gtk_label_new("Email: ");
+        org_label	    = gtk_label_new("Org: ");
+        address_label   = gtk_label_new("Address: ");
         clabels.name_label      = gtk_label_new(name);
         clabels.number_label    = gtk_label_new(number);
         clabels.email_label     = gtk_label_new(email);
         clabels.org_label	    = gtk_label_new(org);
         clabels.address_label   = gtk_label_new(address);
 //                                                                x, y, w, h
+        gtk_grid_attach(GTK_GRID(grid), photo                   , 0, 0, 1, 1);
         gtk_grid_attach(GTK_GRID(grid), name_label              , 1, 1, 1, 1);
-        gtk_grid_attach(GTK_GRID(grid), number_label            , 2, 1, 1, 1);
-        gtk_grid_attach(GTK_GRID(grid), email_label             , 3, 1, 1, 1);
-        gtk_grid_attach(GTK_GRID(grid), org_label               , 4, 1, 1, 1);
-        gtk_grid_attach(GTK_GRID(grid), address_label           , 5, 1, 1, 1);
-        gtk_grid_attach(GTK_GRID(grid), clabels.name_label      , 1, 2, 1, 1);
+        gtk_grid_attach(GTK_GRID(grid), number_label            , 1, 2, 1, 1);
+        gtk_grid_attach(GTK_GRID(grid), email_label             , 1, 3, 1, 1);
+        gtk_grid_attach(GTK_GRID(grid), org_label               , 1, 4, 1, 1);
+        gtk_grid_attach(GTK_GRID(grid), address_label           , 1, 5, 1, 1);
+        gtk_grid_attach(GTK_GRID(grid), clabels.name_label      , 2, 1, 1, 1);
         gtk_grid_attach(GTK_GRID(grid), clabels.number_label    , 2, 2, 1, 1);
-        gtk_grid_attach(GTK_GRID(grid), clabels.email_label     , 3, 2, 1, 1);
-        gtk_grid_attach(GTK_GRID(grid), clabels.org_label       , 4, 2, 1, 1);
-        gtk_grid_attach(GTK_GRID(grid), clabels.address_label   , 5, 2, 1, 1);
+        gtk_grid_attach(GTK_GRID(grid), clabels.email_label     , 2, 3, 1, 1);
+        gtk_grid_attach(GTK_GRID(grid), clabels.org_label       , 2, 4, 1, 1);
+        gtk_grid_attach(GTK_GRID(grid), clabels.address_label   , 2, 5, 1, 1);
 
         gtk_container_add(GTK_CONTAINER(view_frame), grid);
         gtk_widget_show_all(view_frame);
@@ -127,30 +147,43 @@ static void open_contact_view_frame(GtkTreeSelection *selection, gpointer data) 
     }
 }
 
+static void on_file_select(GtkFileChooserButton *button, gpointer data) {
+    const gchar *path = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(button));
+
+    gchar **location = (gchar **)data;
+
+    *location = g_strdup(path);
+}
+
 static void new_contact_frame() {
     gtk_frame_set_label(GTK_FRAME(view_frame), "New Contact");
 
-    remove_child_from(view_frame);
-
     new_contact_grid = gtk_grid_new();
+    if (gtk_bin_get_child(GTK_BIN(view_frame)) != new_contact_grid) {
+        remove_child_from(view_frame);
+    }
 
-    //Set up text and entry widgets
     clabels.name_label      = gtk_label_new("Name");
-    entries.name_entry     = gtk_entry_new();
+    entries.name_entry      = gtk_entry_new();
     clabels.number_label    = gtk_label_new("Number");
-    entries.number_entry   = gtk_entry_new();
+    entries.number_entry    = gtk_entry_new();
     clabels.email_label     = gtk_label_new("Email");
-    entries.email_entry    = gtk_entry_new();
+    entries.email_entry     = gtk_entry_new();
     clabels.org_label	    = gtk_label_new("Organization");
-    entries.org_entry      = gtk_entry_new();
+    entries.org_entry       = gtk_entry_new();
     clabels.address_label   = gtk_label_new("Address");
-    entries.address_entry  = gtk_entry_new();
+    entries.address_entry   = gtk_entry_new();
+    clabels.photoloc_label  = gtk_label_new("Photo");
+    entries.photoloc_entry  = gtk_file_chooser_button_new("Location", GTK_FILE_CHOOSER_ACTION_OPEN); 
 
-    //Set up enter_button
+    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(entries.photoloc_entry), g_get_home_dir());
+    gchar *file_location;
+    g_signal_connect(entries.photoloc_entry, "file-set", G_CALLBACK(on_file_select), &file_location);
+    printf("%s\n", file_location);
+
     enter_button = gtk_button_new_with_label("Save");
     g_signal_connect(enter_button, "clicked", G_CALLBACK(take_user_input), NULL); 
-    
-    //Attach everything to the grid
+
     //                                                                  x, y, w, h
     gtk_grid_attach(GTK_GRID(new_contact_grid), clabels.name_label,     1, 1, 1, 1);
     gtk_grid_attach(GTK_GRID(new_contact_grid), entries.name_entry,     1, 2, 1, 1);
@@ -162,6 +195,8 @@ static void new_contact_frame() {
     gtk_grid_attach(GTK_GRID(new_contact_grid), entries.org_entry,      1, 4, 1, 1);
     gtk_grid_attach(GTK_GRID(new_contact_grid), clabels.address_label,  2, 3, 1, 1);
     gtk_grid_attach(GTK_GRID(new_contact_grid), entries.address_entry,  2, 4, 1, 1);
+    gtk_grid_attach(GTK_GRID(new_contact_grid), clabels.photoloc_label, 3, 3, 1, 1);
+    gtk_grid_attach(GTK_GRID(new_contact_grid), entries.photoloc_entry, 3, 4, 1, 1);
     gtk_grid_attach(GTK_GRID(new_contact_grid), enter_button,           4, 5, 1, 1);
 
     //Present into frame 
@@ -229,11 +264,11 @@ static GtkWidget *create_view() {
 static void refresh() {
     GtkTreeModel *model = create_model();
 
-    if (gtk_tree_view_get_model(view) != NULL) {
-        g_object_unref(gtk_tree_view_get_model(view));
+    if (gtk_tree_view_get_model(GTK_TREE_VIEW(view)) != NULL) {
+        g_object_unref(gtk_tree_view_get_model(GTK_TREE_VIEW(view)));
     }
 
-    gtk_tree_view_set_model(view, model);
+    gtk_tree_view_set_model(GTK_TREE_VIEW(view), model);
 }
 
 static void change_view_frame_size() {

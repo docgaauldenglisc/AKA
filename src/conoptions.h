@@ -8,6 +8,7 @@ typedef struct contact_widgets {
     GtkWidget *email_label;
     GtkWidget *org_label;
     GtkWidget *address_label;
+    GtkWidget *photoloc_label;
 
 } contact; 
 
@@ -18,6 +19,7 @@ typedef struct contact_entry_widgets {
     GtkWidget *email_entry;
     GtkWidget *org_entry;
     GtkWidget *address_entry;
+    GtkWidget *photoloc_entry;
 
 } EntryWidgets;
 
@@ -28,6 +30,7 @@ typedef struct user_input{
     char *email;
     char *org;
     char *address;
+    char *photoloc;
 
 } contact_chars;
 

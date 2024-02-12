@@ -39,15 +39,13 @@ static int get_text_from_col_callback(void *data, int argc, char **argv, char **
     }
     else {
         *(char *)data = '\0';
-        fprintf(stderr, "Nothing copied!");
     }
     return 0;
 
 }
 
 // ----- REGULAR FUNCTIONS ----- //
-int verify_db() {
-
+void verify_db() {
     // Make the contact database
     sqlite3 *db;
     char *zErrMsg = 0; // zero terminated string, error message
@@ -65,7 +63,8 @@ int verify_db() {
                                         "NUMBER "  "TEXT " ",\n" 
                                         "EMAIL "   "TEXT " ",\n" 
                                         "ORG "     "TEXT " ",\n" 
-                                        "ADDRESS " "TEXT " "\n" 
+                                        "ADDRESS " "TEXT " ",\n" 
+                                        "PHOTOLOC ""TEXT " "\n" 
                                         ");" ;
     
     rc = sqlite3_exec(db, make_contact_table, callback, 0, &zErrMsg);
@@ -78,17 +77,9 @@ int verify_db() {
     }
 
     sqlite3_close(db);
-
-}
-
-void fix_schema() {
-    
-    
-
 }
 
 void write_to_file(contact_chars chars) {
-    
     sqlite3 *db;
     int rc;
     int maxid;
@@ -108,8 +99,10 @@ void write_to_file(contact_chars chars) {
                                      "NUMBER," \
                                      "EMAIL," \
                                      "ORG," \
-                                     "ADDRESS)" \
+                                     "ADDRESS," \
+                                     "PHOTOLOC) " \
                                      "VALUES(" \
+                                     "?," \
                                      "?," \
                                      "?," \
                                      "?," \
@@ -120,12 +113,13 @@ void write_to_file(contact_chars chars) {
         fprintf(stderr, "Issue with statement: %s\n", sqlite3_errmsg(db));
         return;
     }
-    sqlite3_bind_int(insert,    1, ++maxid);
+    sqlite3_bind_int(insert,    1, get_max_id() + 1);
     sqlite3_bind_text(insert,   2, chars.name   , -1, SQLITE_STATIC);
     sqlite3_bind_text(insert,   3, chars.number , -1, SQLITE_STATIC);
     sqlite3_bind_text(insert,   4, chars.email  , -1, SQLITE_STATIC);
     sqlite3_bind_text(insert,   5, chars.org    , -1, SQLITE_STATIC);
     sqlite3_bind_text(insert,   6, chars.address, -1, SQLITE_STATIC);
+    sqlite3_bind_text(insert,   7, chars.photoloc,-1, SQLITE_STATIC);
 
     if (sqlite3_step(insert) != SQLITE_DONE) {
         fprintf(stderr, "Issue with statement: %s\n", sqlite3_errmsg(db));
@@ -135,11 +129,9 @@ void write_to_file(contact_chars chars) {
     }
 
     sqlite3_finalize(insert);
-
 }
 
 int get_max_id() {
-
     char *zErrMsg = 0;
     char query[100];
     int rc;
@@ -167,7 +159,6 @@ int get_max_id() {
 }
 
 void get_from_col_and_row(char *col, int row, char *text_return) {
-    
     sqlite3 *db;
     char *zErrMsg = 0;
     int rc;
@@ -199,6 +190,5 @@ void get_from_col_and_row(char *col, int row, char *text_return) {
     }
 
     sqlite3_close(db);
-
 } 
 

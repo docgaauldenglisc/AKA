@@ -1,0 +1,32 @@
+[
+{
+  "directory": "/home/me/code/AKA/build",
+  "command": "/usr/bin/cc  -I/usr/include/gtk-3.0 -I/usr/include/at-spi2-atk/2.0 -I/usr/include/at-spi-2.0 -I/usr/include/dbus-1.0 -I/usr/lib64/dbus-1.0/include -I/usr/include/gio-unix-2.0 -I/usr/include/pango-1.0 -I/usr/include/harfbuzz -I/usr/include/fribidi -I/usr/include/atk-1.0 -I/usr/include/cairo -I/usr/include/freetype2 -I/usr/include/pixman-1 -I/usr/include/gdk-pixbuf-2.0 -I/usr/include/libpng16 -I/usr/include/libmount -I/usr/include/blkid -I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include -pthread -Wall -Wextra -o CMakeFiles/AKA.dir/main.c.o -c /home/me/code/AKA/src/main.c",
+  "file": "/home/me/code/AKA/src/main.c",
+  "output": "CMakeFiles/AKA.dir/main.c.o"
+},
+{
+  "directory": "/home/me/code/AKA/build",
+  "command": "/usr/bin/cc  -I/usr/include/gtk-3.0 -I/usr/include/at-spi2-atk/2.0 -I/usr/include/at-spi-2.0 -I/usr/include/dbus-1.0 -I/usr/lib64/dbus-1.0/include -I/usr/include/gio-unix-2.0 -I/usr/include/pango-1.0 -I/usr/include/harfbuzz -I/usr/include/fribidi -I/usr/include/atk-1.0 -I/usr/include/cairo -I/usr/include/freetype2 -I/usr/include/pixman-1 -I/usr/include/gdk-pixbuf-2.0 -I/usr/include/libpng16 -I/usr/include/libmount -I/usr/include/blkid -I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include -pthread -Wall -Wextra -o CMakeFiles/AKA.dir/config.c.o -c /home/me/code/AKA/src/config.c",
+  "file": "/home/me/code/AKA/src/config.c",
+  "output": "CMakeFiles/AKA.dir/config.c.o"
+},
+{
+  "directory": "/home/me/code/AKA/build",
+  "command": "/usr/bin/cc  -I/usr/include/gtk-3.0 -I/usr/include/at-spi2-atk/2.0 -I/usr/include/at-spi-2.0 -I/usr/include/dbus-1.0 -I/usr/lib64/dbus-1.0/include -I/usr/include/gio-unix-2.0 -I/usr/include/pango-1.0 -I/usr/include/harfbuzz -I/usr/include/fribidi -I/usr/include/atk-1.0 -I/usr/include/cairo -I/usr/include/freetype2 -I/usr/include/pixman-1 -I/usr/include/gdk-pixbuf-2.0 -I/usr/include/libpng16 -I/usr/include/libmount -I/usr/include/blkid -I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include -pthread -Wall -Wextra -o CMakeFiles/AKA.dir/database.c.o -c /home/me/code/AKA/src/database.c",
+  "file": "/home/me/code/AKA/src/database.c",
+  "output": "CMakeFiles/AKA.dir/database.c.o"
+},
+{
+  "directory": "/home/me/code/AKA/build",
+  "command": "/usr/bin/cc  -I/usr/include/gtk-3.0 -I/usr/include/at-spi2-atk/2.0 -I/usr/include/at-spi-2.0 -I/usr/include/dbus-1.0 -I/usr/lib64/dbus-1.0/include -I/usr/include/gio-unix-2.0 -I/usr/include/pango-1.0 -I/usr/include/harfbuzz -I/usr/include/fribidi -I/usr/include/atk-1.0 -I/usr/include/cairo -I/usr/include/freetype2 -I/usr/include/pixman-1 -I/usr/include/gdk-pixbuf-2.0 -I/usr/include/libpng16 -I/usr/include/libmount -I/usr/include/blkid -I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include -pthread -Wall -Wextra -o CMakeFiles/AKA.dir/conoptions.c.o -c /home/me/code/AKA/src/conoptions.c",
+  "file": "/home/me/code/AKA/src/conoptions.c",
+  "output": "CMakeFiles/AKA.dir/conoptions.c.o"
+},
+{
+  "directory": "/home/me/code/AKA/build",
+  "command": "/usr/bin/cc  -I/usr/include/gtk-3.0 -I/usr/include/at-spi2-atk/2.0 -I/usr/include/at-spi-2.0 -I/usr/include/dbus-1.0 -I/usr/lib64/dbus-1.0/include -I/usr/include/gio-unix-2.0 -I/usr/include/pango-1.0 -I/usr/include/harfbuzz -I/usr/include/fribidi -I/usr/include/atk-1.0 -I/usr/include/cairo -I/usr/include/freetype2 -I/usr/include/pixman-1 -I/usr/include/gdk-pixbuf-2.0 -I/usr/include/libpng16 -I/usr/include/libmount -I/usr/include/blkid -I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include -pthread -Wall -Wextra -o CMakeFiles/AKA.dir/gui.c.o -c /home/me/code/AKA/src/gui.c",
+  "file": "/home/me/code/AKA/src/gui.c",
+  "output": "CMakeFiles/AKA.dir/gui.c.o"
+}
+]
