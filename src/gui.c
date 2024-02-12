@@ -41,6 +41,14 @@ enum {
     NUM_COLS
 };
 
+static void remove_child_from(GtkWidget *container) {
+    GtkWidget *child = gtk_bin_get_child(GTK_BIN(container));
+    if (child != NULL) {
+        gtk_container_remove(GTK_CONTAINER(container), child); 
+    }
+    return;
+}
+
 static void take_user_input() {
     chars.name      = gtk_entry_get_text(GTK_ENTRY(entries.name_entry));
     chars.number    = gtk_entry_get_text(GTK_ENTRY(entries.number_entry));
@@ -54,16 +62,79 @@ static void take_user_input() {
     else {
         write_to_file(chars); 
         refresh();
-        
+    }
+}
+
+static void open_contact_view_frame(GtkTreeSelection *selection, gpointer data) {
+    GtkTreeIter iter;
+    GtkTreeModel *model;
+    gchar *name;
+    gchar *number;
+    gchar *email;
+    gchar *org;
+    gchar *address;
+
+    GtkWidget *grid;
+    GtkWidget *name_label;
+    GtkWidget *number_label;
+    GtkWidget *email_label;
+    GtkWidget *org_label;
+    GtkWidget *address_label;
+    
+    remove_child_from(view_frame);
+
+    if (gtk_tree_selection_get_selected(selection, &model, &iter)) {
+        gtk_tree_model_get(model, &iter, COL_NAME   , &name     , -1);
+        gtk_tree_model_get(model, &iter, COL_NUMBER , &number   , -1);
+        gtk_tree_model_get(model, &iter, COL_EMAIL  , &email    , -1);
+        gtk_tree_model_get(model, &iter, COL_ORG    , &org      , -1);
+        gtk_tree_model_get(model, &iter, COL_ADDRESS, &address  , -1);
+
+        gtk_frame_set_label(GTK_FRAME(view_frame), name);
+
+        grid = gtk_grid_new();
+
+        name_label      = gtk_label_new("name");
+        number_label    = gtk_label_new("number");
+        email_label     = gtk_label_new("email");
+        org_label	    = gtk_label_new("org");
+        address_label   = gtk_label_new("address");
+        clabels.name_label      = gtk_label_new(name);
+        clabels.number_label    = gtk_label_new(number);
+        clabels.email_label     = gtk_label_new(email);
+        clabels.org_label	    = gtk_label_new(org);
+        clabels.address_label   = gtk_label_new(address);
+//                                                                x, y, w, h
+        gtk_grid_attach(GTK_GRID(grid), name_label              , 1, 1, 1, 1);
+        gtk_grid_attach(GTK_GRID(grid), number_label            , 2, 1, 1, 1);
+        gtk_grid_attach(GTK_GRID(grid), email_label             , 3, 1, 1, 1);
+        gtk_grid_attach(GTK_GRID(grid), org_label               , 4, 1, 1, 1);
+        gtk_grid_attach(GTK_GRID(grid), address_label           , 5, 1, 1, 1);
+        gtk_grid_attach(GTK_GRID(grid), clabels.name_label      , 1, 2, 1, 1);
+        gtk_grid_attach(GTK_GRID(grid), clabels.number_label    , 2, 2, 1, 1);
+        gtk_grid_attach(GTK_GRID(grid), clabels.email_label     , 3, 2, 1, 1);
+        gtk_grid_attach(GTK_GRID(grid), clabels.org_label       , 4, 2, 1, 1);
+        gtk_grid_attach(GTK_GRID(grid), clabels.address_label   , 5, 2, 1, 1);
+
+        gtk_container_add(GTK_CONTAINER(view_frame), grid);
+        gtk_widget_show_all(view_frame);
+
+        g_free(name);
+        g_free(number);
+        g_free(email);
+        g_free(org);
+        g_free(address);
     }
 }
 
 static void new_contact_frame() {
     gtk_frame_set_label(GTK_FRAME(view_frame), "New Contact");
 
+    remove_child_from(view_frame);
+
     new_contact_grid = gtk_grid_new();
 
-        //Set up text and entry widgets
+    //Set up text and entry widgets
     clabels.name_label      = gtk_label_new("Name");
     entries.name_entry     = gtk_entry_new();
     clabels.number_label    = gtk_label_new("Number");
@@ -175,6 +246,8 @@ static void change_view_frame_size() {
 }
 
 static void main_window(GtkApplication *app) {
+    GtkTreeSelection *select;
+
     window = gtk_application_window_new(app);
     main_grid = gtk_grid_new();
     main_frame = gtk_frame_new("AKA");
@@ -190,7 +263,7 @@ static void main_window(GtkApplication *app) {
     list_box = gtk_list_box_new();
     view = create_view();
 
-    refresh(NULL, GTK_TREE_VIEW(view));
+    refresh();
 
     gtk_widget_set_hexpand(new_contact_button, FALSE);
     gtk_box_pack_start(GTK_BOX(o_box), new_contact_button, FALSE, FALSE, 0); 
@@ -208,6 +281,9 @@ static void main_window(GtkApplication *app) {
     gtk_widget_set_hexpand(search_entry, TRUE);
 
     gtk_tree_view_set_model(GTK_TREE_VIEW(view), create_model());
+    select = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
+    gtk_tree_selection_set_mode(GTK_TREE_SELECTION(select), GTK_SELECTION_SINGLE);
+    g_signal_connect(G_OBJECT(select), "changed", G_CALLBACK(open_contact_view_frame), NULL);
 
     gtk_grid_attach(GTK_GRID(list_grid), search_entry, 1, 1, 1, 1);
     gtk_grid_attach(GTK_GRID(list_grid), refresh_button, 2, 1, 1, 1);

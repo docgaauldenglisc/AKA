@@ -1,6 +1,7 @@
 #ifndef GUI_H
 #define GUI_H
 
+static void remove_child_from(GtkWidget *container);
 static void take_user_input();
 static void new_contact_frame();
 static GtkTreeModel *create_model();

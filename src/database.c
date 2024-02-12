@@ -166,7 +166,7 @@ int get_max_id() {
     return id_val;
 }
 
-void get_from_col_and_row(char col[], int row, char *text_return) {
+void get_from_col_and_row(char *col, int row, char *text_return) {
     
     sqlite3 *db;
     char *zErrMsg = 0;
