@@ -41,6 +41,13 @@ enum {
     NUM_COLS
 };
 
+static void search_callback() {
+    char *query = (char*)gtk_entry_buffer_get_text(gtk_entry_get_buffer(GTK_ENTRY(search_entry)));
+    printf("%s\n", query);
+
+    get_from_search(query);
+}
+
 static void remove_child_from(GtkWidget *container) {
     GtkWidget *child = gtk_bin_get_child(GTK_BIN(container));
     if (child != NULL) {
@@ -103,6 +110,7 @@ static void open_contact_view_frame(GtkTreeSelection *selection, gpointer data) 
         if (photoloc[0] != NULL) {
             printf("Something in here\n");
         }
+
         photo = gtk_image_new_from_file(photoloc);
         GdkPixbuf *buf = gtk_image_get_pixbuf(GTK_IMAGE(photo));
         int width = gdk_pixbuf_get_width(buf);
@@ -124,7 +132,7 @@ static void open_contact_view_frame(GtkTreeSelection *selection, gpointer data) 
         clabels.org_label	    = gtk_label_new(org);
         clabels.address_label   = gtk_label_new(address);
 //                                                                x, y, w, h
-        gtk_grid_attach(GTK_GRID(grid), photo                   , 0, 0, 1, 1);
+        gtk_grid_attach(GTK_GRID(grid), photo                   , 1, 0, 2, 1);
         gtk_grid_attach(GTK_GRID(grid), name_label              , 1, 1, 1, 1);
         gtk_grid_attach(GTK_GRID(grid), number_label            , 1, 2, 1, 1);
         gtk_grid_attach(GTK_GRID(grid), email_label             , 1, 3, 1, 1);
@@ -179,7 +187,6 @@ static void new_contact_frame() {
     gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(entries.photoloc_entry), g_get_home_dir());
     gchar *file_location;
     g_signal_connect(entries.photoloc_entry, "file-set", G_CALLBACK(on_file_select), &file_location);
-    printf("%s\n", file_location);
 
     enter_button = gtk_button_new_with_label("Save");
     g_signal_connect(enter_button, "clicked", G_CALLBACK(take_user_input), NULL); 
@@ -206,12 +213,13 @@ static void new_contact_frame() {
 
 static GtkTreeModel *create_model() {
     GtkTreeIter iter;
+    printf("1\n");
 
     int max = get_max_id();
-
-    printf("%d\n", get_max_id());
+    printf("2\n");
 
     GtkListStore *store = gtk_list_store_new(NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+    printf("3\n");
 
     for (int i = 0; i < max; i++) {
         char id[50];
@@ -228,12 +236,16 @@ static GtkTreeModel *create_model() {
         get_from_col_and_row("ORG"     , (i + 1), org);
         get_from_col_and_row("ADDRESS" , (i + 1), address);
 
-        printf("%i Gotten name of: %s\n", (i + 1), name);
+        printf("Gotten name of %i: %s\n", (i + 1), name);
+        printf("4\n");
     
         gtk_list_store_append(GTK_LIST_STORE(store), &iter);
+        printf("5\n");
         gtk_list_store_set(store, &iter, COL_ID, id, COL_NAME, name, COL_NUMBER, number, COL_EMAIL, email, COL_ORG, org, COL_ADDRESS, address, -1);
+        printf("6\n");
     }
-    return GTK_TREE_MODEL(store);
+    GtkTreeModel *model = GTK_TREE_MODEL(store);
+    return model;
 }
 
 static GtkWidget *create_view() {
@@ -269,6 +281,7 @@ static void refresh() {
     }
 
     gtk_tree_view_set_model(GTK_TREE_VIEW(view), model);
+    return;
 }
 
 static void change_view_frame_size() {
@@ -307,6 +320,8 @@ static void main_window(GtkApplication *app) {
     // A little complicated, but it should be fine.
     // The view frame should be 45% of the width of the window at all times.
     g_signal_connect(window, "size-allocate", G_CALLBACK(change_view_frame_size), view_frame);
+
+    g_signal_connect(search_entry, "search-changed", search_callback, NULL);
 
     gtk_button_set_image(GTK_BUTTON(refresh_button), refresh_icon);
     g_signal_connect(refresh_button, "clicked", G_CALLBACK(refresh), view);
@@ -353,6 +368,5 @@ int start_gui(int argc, char **argv) {
     status  = g_application_run(G_APPLICATION(app), argc, argv);
     g_object_unref(app);
 
-    printf("%i\n", status);
     return status;
 }

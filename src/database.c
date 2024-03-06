@@ -10,7 +10,24 @@
 
 int id_val = 0;
 
+typedef struct {
+    int *ids;
+    int count;
+} idList;
+
 // ----- CALLBACK FUNCTIONS ----- //
+static int search_callback(void *data, int argc, char **argv, char **az_col_name) {
+    idList *list = (idList *)data;
+
+    if (argc > 0 && argv[0]) {
+        int id = atoi(argv[0]);
+        list->ids = realloc(list->ids, (list->count + 1) * sizeof(int));
+
+        list->ids[list->count++] = id;
+    }
+    return 0;
+}
+
 static int callback(void *data, int argc, char **argv, char **az_col_name) {
     for (int i = 0; i < argc; ++i) {
         printf("%s = %s\n", az_col_name[i], argv[i] ? argv[i] : "NULL");
@@ -32,7 +49,6 @@ static int id_search(void *data, int argc, char **argv, char **az_col_name) {
 }
 
 static int get_text_from_col_callback(void *data, int argc, char **argv, char **az_col_name) { 
-
     if (argc > 0 && argv[0] != NULL) {
         strncpy((char *)data, argv[0], 49);
         ((char *)data)[49] = '\0';
@@ -41,10 +57,32 @@ static int get_text_from_col_callback(void *data, int argc, char **argv, char **
         *(char *)data = '\0';
     }
     return 0;
-
 }
 
 // ----- REGULAR FUNCTIONS ----- //
+int get_from_search(char *query) {
+    sqlite3 *db;
+    char *err;
+    int rc;
+    idList list = {.ids = NULL, .count = 0};
+
+    rc = sqlite3_open("Contacts.db", &db);
+    if (rc) {
+        fprintf(stderr, "SQL Error: %s\n", sqlite3_errmsg(db));
+    }
+
+    sqlite3_stmt *statement;
+    const char *search_database = "SELECT NAME FROM Contacts WHERE NAME LIKE '%?%';";
+
+    if(sqlite3_prepare_v2(db, search_database, -1, &statement, NULL) != SQLITE_OK) {
+        fprintf(stderr, "Issue with statement: %s\n", sqlite3_errmsg(db));
+    }
+    sqlite3_bind_text(statement, 1, query, -1, SQLITE_STATIC); 
+
+    rc = sqlite3_exec(db, search_database, callback, 0, &err);
+    return 0;
+}
+
 void verify_db() {
     // Make the contact database
     sqlite3 *db;
