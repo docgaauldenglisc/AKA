@@ -50,8 +50,8 @@ static int id_search(void *data, int argc, char **argv, char **az_col_name) {
 
 static int get_text_from_col_callback(void *data, int argc, char **argv, char **az_col_name) { 
     if (argc > 0 && argv[0] != NULL) {
-        strncpy((char *)data, argv[0], 49);
-        ((char *)data)[49] = '\0';
+        strcpy((char *)data, argv[0]);
+        ((char *)data)[4095] = '\0';
     }
     else {
         *(char *)data = '\0';
@@ -224,7 +224,7 @@ void get_from_col_and_row(char *col, int row, char *text_return) {
     }
     else {
         fprintf(stdout, "%s: %s\n", col, text);
-        strncpy(text_return, text, 50); 
+        strcpy(text_return, text); 
     }
 
     sqlite3_close(db);

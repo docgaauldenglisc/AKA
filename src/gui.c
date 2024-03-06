@@ -76,7 +76,7 @@ static void take_user_input() {
 static void open_contact_view_frame(GtkTreeSelection *selection, gpointer data) {
     GtkTreeIter iter;
     GtkTreeModel *model;
-    char photoloc[50];
+    char photoloc[4096];
     gchar *id;
     gchar *name;
     gchar *number;
@@ -107,7 +107,7 @@ static void open_contact_view_frame(GtkTreeSelection *selection, gpointer data) 
         grid = gtk_grid_new();
         get_from_col_and_row("PHOTOLOC", atoi(id), photoloc);
         printf("%s\n", photoloc);
-        if (photoloc[0] != NULL) {
+        if (photoloc[0] != 0) {
             printf("Something in here\n");
         }
 
