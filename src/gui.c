@@ -108,6 +108,7 @@ static void take_user_input() {
     else {
         write_to_file(chars); 
         refresh();
+        new_contact_frame();
     }
 }
 
