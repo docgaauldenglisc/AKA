@@ -10,7 +10,7 @@ typedef struct contact_widgets {
     GtkWidget *address_label;
     GtkWidget *photoloc_label;
 
-} contact; 
+} contact_widgets; 
 
 typedef struct contact_entry_widgets {
     
