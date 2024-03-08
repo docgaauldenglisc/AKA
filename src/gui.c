@@ -43,9 +43,47 @@ enum {
 
 static void search_callback() {
     char *query = (char*)gtk_entry_buffer_get_text(gtk_entry_get_buffer(GTK_ENTRY(search_entry)));
-    printf("%s\n", query);
 
-    get_from_search(query);
+    if (query[0] == '\0') {
+        refresh();
+        return;
+    }
+
+    idList ids = {.ids = NULL, .count = 0};
+
+    ids = get_from_search(query);
+
+    if (gtk_tree_view_get_model(GTK_TREE_VIEW(view)) != NULL) {
+        g_object_unref(gtk_tree_view_get_model(GTK_TREE_VIEW(view)));
+    }
+
+    GtkTreeIter iter;
+
+    int max = ids.count;
+
+    GtkListStore *store = gtk_list_store_new(NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+
+    for (int i = 0; i < max; i++) {
+        char id[50];
+        char name[50];
+        char number[50];
+        char email[50];
+        char org[50];
+        char address[50];
+
+        get_from_col_and_row("ID"      , ids.ids[i], id);
+        get_from_col_and_row("NAME"    , ids.ids[i], name);
+        get_from_col_and_row("NUMBER"  , ids.ids[i], number);
+        get_from_col_and_row("EMAIL"   , ids.ids[i], email);
+        get_from_col_and_row("ORG"     , ids.ids[i], org);
+        get_from_col_and_row("ADDRESS" , ids.ids[i], address);
+
+        gtk_list_store_append(GTK_LIST_STORE(store), &iter);
+        gtk_list_store_set(store, &iter, COL_ID, id, COL_NAME, name, COL_NUMBER, number, COL_EMAIL, email, COL_ORG, org, COL_ADDRESS, address, -1);
+    }
+    GtkTreeModel *model = GTK_TREE_MODEL(store);
+
+    gtk_tree_view_set_model(GTK_TREE_VIEW(view), model);
 }
 
 static void remove_child_from(GtkWidget *container) {
@@ -213,13 +251,10 @@ static void new_contact_frame() {
 
 static GtkTreeModel *create_model() {
     GtkTreeIter iter;
-    printf("1\n");
 
     int max = get_max_id();
-    printf("2\n");
 
     GtkListStore *store = gtk_list_store_new(NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
-    printf("3\n");
 
     for (int i = 0; i < max; i++) {
         char id[50];
@@ -236,13 +271,8 @@ static GtkTreeModel *create_model() {
         get_from_col_and_row("ORG"     , (i + 1), org);
         get_from_col_and_row("ADDRESS" , (i + 1), address);
 
-        printf("Gotten name of %i: %s\n", (i + 1), name);
-        printf("4\n");
-    
         gtk_list_store_append(GTK_LIST_STORE(store), &iter);
-        printf("5\n");
         gtk_list_store_set(store, &iter, COL_ID, id, COL_NAME, name, COL_NUMBER, number, COL_EMAIL, email, COL_ORG, org, COL_ADDRESS, address, -1);
-        printf("6\n");
     }
     GtkTreeModel *model = GTK_TREE_MODEL(store);
     return model;

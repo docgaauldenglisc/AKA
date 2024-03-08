@@ -34,4 +34,10 @@ typedef struct user_input{
 
 } contact_chars;
 
+
+typedef struct {
+    int *ids;
+    int count;
+} idList;
+
 #endif
