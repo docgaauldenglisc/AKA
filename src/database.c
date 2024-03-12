@@ -116,6 +116,25 @@ void verify_db() {
     sqlite3_close(db);
 }
 
+void edit_col_and_row(contact_chars chars) {
+    sqlite3 *db;
+    int rc;
+    sqlite3_stmt *stmt;
+
+    rc = sqlite3_open("Contacts.db", &db);
+    if (rc) {
+        printf("SHIIIIIT!\n");
+    }
+
+    const char *statement_string = "UPDATE Contacts" \
+                                   "SET NAME = \"?\"," \ 
+                                   "NUMBER = \"?\"," \
+                                   "EMAIL = \"?\"," \
+                                   "ORG = \"?\"," \
+                                   "ADDRESS = \"?\"" \
+
+}
+
 void write_to_file(contact_chars chars) {
     sqlite3 *db;
     int rc;

@@ -133,20 +133,24 @@ static void edit_contact_frame(GtkWidget *not_used, gpointer data) {
         remove_child_from(view_frame);
     }
 
-    printf("%lu\n", strlen(con->name));
+    get_from_col_and_row("NAME", atoi(con->id), con->name);  
+    get_from_col_and_row("NUMBER", atoi(con->id), con->number);  
+    get_from_col_and_row("EMAIL", atoi(con->id), con->email);  
+    get_from_col_and_row("ORG", atoi(con->id), con->org);  
+    get_from_col_and_row("ADDRESS", atoi(con->id), con->address);  
 
     clabels.name_label      = gtk_label_new("Name");
-    entries.name_entry      = gtk_entry_new_with_buffer(gtk_entry_buffer_new(con->name, sizeof(con->name)));
+    entries.name_entry      = gtk_entry_new_with_buffer(gtk_entry_buffer_new(con->name, strlen(con->name)));
     clabels.number_label    = gtk_label_new("Number");
-    entries.number_entry    = gtk_entry_new();
+    entries.number_entry    = gtk_entry_new_with_buffer(gtk_entry_buffer_new(con->number, strlen(con->number)));
     clabels.email_label     = gtk_label_new("Email");
-    entries.email_entry     = gtk_entry_new();
+    entries.email_entry     = gtk_entry_new_with_buffer(gtk_entry_buffer_new(con->email, strlen(con->email)));
     clabels.org_label	    = gtk_label_new("Organization");
-    entries.org_entry       = gtk_entry_new();
+    entries.org_entry       = gtk_entry_new_with_buffer(gtk_entry_buffer_new(con->org, strlen(con->org)));
     clabels.address_label   = gtk_label_new("Address");
-    entries.address_entry   = gtk_entry_new();
+    entries.address_entry   = gtk_entry_new_with_buffer(gtk_entry_buffer_new(con->address, strlen(con->address)));
     clabels.photoloc_label  = gtk_label_new("Photo");
-    entries.photoloc_entry  = gtk_file_chooser_button_new("Location", GTK_FILE_CHOOSER_ACTION_OPEN); 
+    entries.photoloc_entry  = gtk_file_chooser_button_new(con->photoloc, GTK_FILE_CHOOSER_ACTION_OPEN); 
 
     gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(entries.photoloc_entry), g_get_home_dir());
     gchar *file_location;
