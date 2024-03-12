@@ -25,6 +25,7 @@ typedef struct contact_entry_widgets {
 
 typedef struct user_input{
     
+    char *id;
     char *name;
     char *number;
     char *email;

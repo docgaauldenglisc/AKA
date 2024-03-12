@@ -116,7 +116,7 @@ void verify_db() {
     sqlite3_close(db);
 }
 
-void edit_col_and_row(contact_chars chars) {
+void edit_col_and_row(contact_chars *chars) {
     sqlite3 *db;
     int rc;
     sqlite3_stmt *stmt;
@@ -127,12 +127,20 @@ void edit_col_and_row(contact_chars chars) {
     }
 
     const char *statement_string = "UPDATE Contacts" \
-                                   "SET NAME = \"?\"," \ 
-                                   "NUMBER = \"?\"," \
-                                   "EMAIL = \"?\"," \
-                                   "ORG = \"?\"," \
-                                   "ADDRESS = \"?\"" \
-
+                                   "SET NAME = \'?\'," \ 
+                                   "NUMBER = \'?\'," \
+                                   "EMAIL = \'?\'," \
+                                   "ORG = \'?\'," \
+                                   "ADDRESS = \'?\'," \
+                                   "PHOTOLOC = \'?\'," \
+                                   "WHERE ID = \'?\'";
+    sqlite3_prepare_v2(db, statement_string, -1, &stmt, NULL);
+    sqlite3_bind_text(stmt, 1, chars->name, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 2, chars->number, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 3, chars->email, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 4, chars->org, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 5, chars->address, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 6, chars->photoloc, -1, SQLITE_STATIC);
 }
 
 void write_to_file(contact_chars chars) {

@@ -105,6 +105,25 @@ static void remove_child_from(GtkWidget *container) {
     return;
 }
 
+static void edit_with_user_input() {
+    get_from_col_and_row("ID", , &chars.id); 
+    chars.name      = gtk_entry_get_text(GTK_ENTRY(entries.name_entry));
+    chars.number    = gtk_entry_get_text(GTK_ENTRY(entries.number_entry));
+    chars.org       = gtk_entry_get_text(GTK_ENTRY(entries.org_entry));
+    chars.email     = gtk_entry_get_text(GTK_ENTRY(entries.email_entry));
+    chars.address   = gtk_entry_get_text(GTK_ENTRY(entries.address_entry));
+    chars.photoloc  = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(entries.photoloc_entry)); 
+    
+    if ((strcmp(chars.name, "")) == 0) {
+        printf("Add a name\n");
+    }
+    else {
+        write_to_file(chars); 
+        refresh();
+        new_contact_frame();
+    }
+}
+
 static void take_user_input() {
     chars.name      = gtk_entry_get_text(GTK_ENTRY(entries.name_entry));
     chars.number    = gtk_entry_get_text(GTK_ENTRY(entries.number_entry));
@@ -157,7 +176,7 @@ static void edit_contact_frame(GtkWidget *not_used, gpointer data) {
     g_signal_connect(entries.photoloc_entry, "file-set", G_CALLBACK(on_file_select), &file_location);
 
     enter_button = gtk_button_new_with_label("Save");
-    g_signal_connect(enter_button, "clicked", G_CALLBACK(take_user_input), NULL); 
+    g_signal_connect(enter_button, "clicked", G_CALLBACK(edit_with_user_input), NULL); 
 
     //                                                                  x, y, w, h
     gtk_grid_attach(GTK_GRID(edit_contact_grid), clabels.name_label,     1, 1, 1, 1);
