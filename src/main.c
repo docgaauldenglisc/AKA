@@ -1,8 +1,8 @@
 #include "gui.h"
 #include "database.h"
 
-int main() {
-    database_init();
+int main(int argc, char **argv) {
+    db_init();
 
-    gui_init();
+    gui_init(argc, argv);
 }
