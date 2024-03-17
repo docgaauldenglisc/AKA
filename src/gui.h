@@ -23,6 +23,11 @@ typedef struct {
 } ContactEntries;
 
 typedef struct {
+    GtkTreeModel *model;
+    GtkTreeView *view;
+} ListView;
+
+typedef struct {
     ContactText *con;
     ContactEntries *enter;
 } Contact;

@@ -3,19 +3,56 @@
 #include "gui.h"
 #include "database.h"
 
+static void remove_child_from(GtkWidget *container) {
+    GtkWidget *child = gtk_bin_get_child(GTK_BIN(container));
+    if (child != NULL) {
+        gtk_container_remove(GTK_CONTAINER(container), child); 
+    }
+}
+
+enum {
+    COL_ID = 0,
+    COL_NAME,
+    COL_NUMBER,
+    COL_EMAIL,
+    COL_ORG,
+    COL_ADDRESS,
+    NUM_COLS
+};
+
+static GtkTreeModel *list_create_model() {
+    int max = db_max_id();
+
+    GtkTreeIter iter;
+    GtkListStore *store = gtk_list_store_new(NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,-1);
+
+    for (int i = 1; i < max + 1; i++) {
+        ContactText con;
+
+        con.id = db_get("ID", i);
+
+        gtk_list_store_append(store, &iter);
+        gtk_list_store_set(store, &iter, COL_ID, con.id, -1);
+    }
+    GtkTreeModel *model = GTK_TREE_MODEL(store);
+
+    return model;
+}
+
+static void list_refresh(ListView *view) {
+    view->model = list_create_model();
+
+    remove_child_from(GTK_WIDGET(view->view));
+
+    gtk_tree_view_set_model(GTK_TREE_VIEW(view->view), view->model);
+}
+
 static void on_file_select(GtkFileChooserButton *button, gpointer data) {
     const gchar *path = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(button));
 
     gchar **location = (gchar **)data;
 
     *location = g_strdup(path);
-}
-
-static void remove_child_from(GtkWidget *container) {
-    GtkWidget *child = gtk_bin_get_child(GTK_BIN(container));
-    if (child != NULL) {
-        gtk_container_remove(GTK_CONTAINER(container), child); 
-    }
 }
 
 static void save_contact(GtkWidget *nu, gpointer data) {
@@ -131,6 +168,8 @@ static void main_window(GtkApplication *app) {
 
     gtk_widget_set_hexpand(new_box, TRUE);
     gtk_box_pack_start(GTK_BOX(new_box), new_contact_button, FALSE, FALSE, 0);
+
+    list_refresh(list_frame);
 
     g_signal_connect(new_contact_button, "clicked", G_CALLBACK(switch_to_new_contact_frame), view_frame);
 

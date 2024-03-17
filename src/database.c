@@ -4,11 +4,19 @@
 #include "gui.h"
 #include "database.h"
 
+static int search_callback(void *data, int argc, char **argv, char **nu) {
+    char *ret = (char *)data;
+
+    ret = argv[0];
+    printf("%s\n", ret);
+
+    return 0;
+}
+
 static int iterator_callback(void *data, int argc, char **argv, char **nu) {
     int *max_id = (int *)data;
 
     if (argv[0] == NULL) {
-        printf("There is no number\n");
         *max_id = 0;
     }
     else {
@@ -18,7 +26,27 @@ static int iterator_callback(void *data, int argc, char **argv, char **nu) {
     return 0;
 }
 
-int max_id() {
+char *db_get(char *col, int row) {
+    sqlite3 *db;
+    sqlite3_stmt *get_stmt;
+    char *err = 0;
+    char *ret;
+
+    sqlite3_open("Contacts.db", &db);
+
+    char *get_temp = "SELECT ? FROM Contacts WHERE ID = ?;";
+    sqlite3_prepare_v2(db, get_temp, -1, &get_stmt, NULL);
+    sqlite3_bind_text(get_stmt, 1, col, -1, SQLITE_STATIC);
+    sqlite3_bind_int( get_stmt, 2, row);
+
+    sqlite3_exec(db, (char *)get_stmt, search_callback, &ret, &err);
+
+    sqlite3_finalize(get_stmt);
+
+    return ret;
+}
+
+int db_max_id() {
     sqlite3 *db;
     int rc;
     int max_id;
@@ -67,21 +95,13 @@ void db_save_contact(Contact *con) {
         fprintf(stderr, "Issue with statement: %s\n", sqlite3_errmsg(db));
         return;
     }
-    printf("1\n");
-    sqlite3_bind_int( make_new_contact,   1, max_id() + 1);
-    printf("2\n");
+    sqlite3_bind_int( make_new_contact,   1, db_max_id() + 1);
     sqlite3_bind_text(make_new_contact,   2, con->con->name       , -1, SQLITE_STATIC);
-    printf("3\n");
     sqlite3_bind_text(make_new_contact,   3, con->con->number     , -1, SQLITE_STATIC);
-    printf("4\n");
     sqlite3_bind_text(make_new_contact,   4, con->con->email      , -1, SQLITE_STATIC);
-    printf("5\n");
     sqlite3_bind_text(make_new_contact,   5, con->con->org        , -1, SQLITE_STATIC);
-    printf("6\n");
     sqlite3_bind_text(make_new_contact,   6, con->con->address    , -1, SQLITE_STATIC);
-    printf("7\n");
     sqlite3_bind_text(make_new_contact,   7, con->con->photoloc   , -1, SQLITE_STATIC);
-    printf("8\n");
 
     if (sqlite3_step(make_new_contact) != SQLITE_DONE) {
         fprintf(stderr, "Issue with statement: %s\n", sqlite3_errmsg(db));
