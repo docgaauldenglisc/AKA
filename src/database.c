@@ -1,16 +1,45 @@
 #include <stdio.h>
+#include <string.h>
 #include <sqlite3.h>
 
 #include "gui.h"
 #include "database.h"
 
 static int search_callback(void *data, int argc, char **argv, char **nu) {
-    char *ret = (char *)data;
+    char *temp = (char *)data;
 
-    ret = argv[0];
-    printf("%s\n", ret);
-
+    if (argc > 0 && argv[0] != NULL) {
+        strncpy(temp, argv[0], strlen(argv[0]));
+    }
+    else {
+        *temp = '\0';
+    }
     return 0;
+}
+
+
+char *db_get(char *col, int row) {
+    sqlite3 *db;
+    int str_size;
+    char *err = 0;
+    char query[50] = "SELECT %s FROM Contacts WHERE ID = %i";
+    char temp[100] = "";
+    char row_str[50] = "";
+
+    sprintf(row_str, "%i", row);
+
+    str_size = strlen(query) + strlen(col) + strlen(row_str);
+
+    sqlite3_open("Contacts.db", &db);
+
+    char *get_stmt = malloc(str_size); 
+    snprintf(get_stmt, str_size, query, col, row); 
+
+    sqlite3_exec(db, get_stmt, search_callback, &temp, &err);
+
+    char *ret = malloc(strlen(temp));
+
+    return strcpy(ret, temp); 
 }
 
 static int iterator_callback(void *data, int argc, char **argv, char **nu) {
@@ -24,26 +53,6 @@ static int iterator_callback(void *data, int argc, char **argv, char **nu) {
     }
 
     return 0;
-}
-
-char *db_get(char *col, int row) {
-    sqlite3 *db;
-    sqlite3_stmt *get_stmt;
-    char *err = 0;
-    char *ret;
-
-    sqlite3_open("Contacts.db", &db);
-
-    char *get_temp = "SELECT ? FROM Contacts WHERE ID = ?;";
-    sqlite3_prepare_v2(db, get_temp, -1, &get_stmt, NULL);
-    sqlite3_bind_text(get_stmt, 1, col, -1, SQLITE_STATIC);
-    sqlite3_bind_int(get_stmt, 2, row);
-
-    sqlite3_exec(db, (char *)get_stmt, search_callback, &ret, &err);
-
-    sqlite3_finalize(get_stmt);
-
-    return ret;
 }
 
 int db_max_id() {

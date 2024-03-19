@@ -44,12 +44,33 @@ static GtkTreeModel *list_create_model() {
     return model;
 }
 
+static GtkWidget *list_create_view() {
+    GtkCellRenderer *renderer;
+    GtkWidget *view = gtk_tree_view_new();
+
+    renderer = gtk_cell_renderer_text_new();
+    gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "ID"       , renderer, "text", COL_ID, NULL);
+    gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Name"     , renderer, "text", COL_NAME, NULL);
+    gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Number"   , renderer, "text", COL_NUMBER, NULL);
+    gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Email"    , renderer, "text", COL_EMAIL, NULL);
+    gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Org"      , renderer, "text", COL_ORG, NULL);
+    gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Address"  , renderer, "text", COL_ADDRESS, NULL);
+    
+    GtkTreeModel *model = list_create_model();
+    gtk_tree_view_set_model(GTK_TREE_VIEW(view), model);
+
+    //g_object_unref(model);
+
+    return view;
+}
+
 static void list_refresh(GtkWidget *nu, ListView *view) {
     view->model = list_create_model();
 
     if (gtk_tree_view_get_model(GTK_TREE_VIEW(view)) != NULL) {
         g_object_unref(gtk_tree_view_get_model(GTK_TREE_VIEW(view)));
     }
+
 
     gtk_tree_view_set_model(GTK_TREE_VIEW(view->view), view->model);
 }
@@ -69,12 +90,6 @@ static void save_contact(GtkWidget *nu, gpointer data) {
     con->con->email     = (char *)gtk_entry_get_text(GTK_ENTRY(con->enter->email));
     con->con->org       = (char *)gtk_entry_get_text(GTK_ENTRY(con->enter->org));
     con->con->address   = (char *)gtk_entry_get_text(GTK_ENTRY(con->enter->address));
-    printf("NAME %s\n", con->con->name);
-    printf("NUMBER %s\n", con->con->number);
-    printf("EMAIL %s\n", con->con->email);
-    printf("ORG %s\n", con->con->org);
-    printf("ADDRESS %s\n", con->con->address);
-    printf("PHOTO LOCATION %s\n", con->con->photoloc);
 
     db_save_contact(con);
 }
@@ -172,7 +187,7 @@ static void main_window(GtkApplication *app) {
     new_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     new_contact_button = gtk_button_new_with_label("+");
     list_frame = gtk_frame_new("");
-    list->view = gtk_tree_view_new();
+    list->view = list_create_view();
     view_frame = gtk_frame_new("");
 
     gtk_frame_set_label_align(GTK_FRAME(main_frame), 0.5, 1.0);
@@ -191,6 +206,8 @@ static void main_window(GtkApplication *app) {
     gtk_widget_set_hexpand(view_frame, TRUE);
     gtk_widget_set_vexpand(view_frame, TRUE);
     gtk_frame_set_label_align(GTK_FRAME(view_frame), 0.5, 1.0);
+
+    gtk_container_add(GTK_CONTAINER(list_frame), list->view);
 
     gtk_grid_attach(GTK_GRID(main_grid), new_box,           0, 0, 1, 1);
     gtk_grid_attach(GTK_GRID(main_grid), list_frame,        0, 1, 1, 1);
