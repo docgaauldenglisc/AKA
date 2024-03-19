@@ -24,7 +24,7 @@ typedef struct {
 
 typedef struct {
     GtkTreeModel *model;
-    GtkTreeView *view;
+    GtkWidget *view;
 } ListView;
 
 typedef struct {

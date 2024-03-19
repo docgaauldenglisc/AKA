@@ -24,25 +24,32 @@ static GtkTreeModel *list_create_model() {
     int max = db_max_id();
 
     GtkTreeIter iter;
-    GtkListStore *store = gtk_list_store_new(NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,-1);
+    GtkListStore *store = gtk_list_store_new(6, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 
     for (int i = 1; i < max + 1; i++) {
         ContactText con;
 
         con.id = db_get("ID", i);
+        con.name = db_get("NAME", i);
+        con.number = db_get("NUMBER", i);
+        con.email = db_get("EMAIL", i);
+        con.org = db_get("ORG", i);
+        con.address = db_get("ADDRESS", i);
 
         gtk_list_store_append(store, &iter);
-        gtk_list_store_set(store, &iter, COL_ID, con.id, -1);
+        gtk_list_store_set(store, &iter, 0, con.id, 1, con.name, 2, con.number, 3, con.email, 4, con.org, 5, con.address, -1);
     }
     GtkTreeModel *model = GTK_TREE_MODEL(store);
 
     return model;
 }
 
-static void list_refresh(ListView *view) {
+static void list_refresh(GtkWidget *nu, ListView *view) {
     view->model = list_create_model();
 
-    remove_child_from(GTK_WIDGET(view->view));
+    if (gtk_tree_view_get_model(GTK_TREE_VIEW(view)) != NULL) {
+        g_object_unref(gtk_tree_view_get_model(GTK_TREE_VIEW(view)));
+    }
 
     gtk_tree_view_set_model(GTK_TREE_VIEW(view->view), view->model);
 }
@@ -79,12 +86,12 @@ static void switch_to_new_contact_frame(GtkWidget *nu, GtkWidget *view_frame) {
     ContactEntries *enter = malloc(sizeof(ContactEntries));
     Contact *con = malloc(sizeof(Contact));
 
-    text->name = "\0";
-    text->number = "\0";
-    text->email = "\0";
-    text->org = "\0";
-    text->address = "\0";
-    text->photoloc = "\0";
+    text->name = "";
+    text->number = "";
+    text->email = "";
+    text->org = "";
+    text->address = "";
+    text->photoloc = "";
 
     con->con = text;
     con->enter = enter;
@@ -154,7 +161,10 @@ static void main_window(GtkApplication *app) {
                 GtkWidget *new_box;
                     GtkWidget *new_contact_button;
                 GtkWidget *list_frame;
+                    ListView *list;
                 GtkWidget *view_frame;
+
+    list = (ListView *)malloc(sizeof(ListView));
 
     win = gtk_application_window_new(app);
     main_frame = gtk_frame_new("AKA");
@@ -162,6 +172,7 @@ static void main_window(GtkApplication *app) {
     new_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     new_contact_button = gtk_button_new_with_label("+");
     list_frame = gtk_frame_new("");
+    list->view = gtk_tree_view_new();
     view_frame = gtk_frame_new("");
 
     gtk_frame_set_label_align(GTK_FRAME(main_frame), 0.5, 1.0);
@@ -169,7 +180,7 @@ static void main_window(GtkApplication *app) {
     gtk_widget_set_hexpand(new_box, TRUE);
     gtk_box_pack_start(GTK_BOX(new_box), new_contact_button, FALSE, FALSE, 0);
 
-    list_refresh(list_frame);
+    list_refresh(NULL, list);
 
     g_signal_connect(new_contact_button, "clicked", G_CALLBACK(switch_to_new_contact_frame), view_frame);
 

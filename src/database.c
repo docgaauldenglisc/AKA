@@ -37,7 +37,7 @@ char *db_get(char *col, int row) {
     char *get_temp = "SELECT ? FROM Contacts WHERE ID = ?;";
     sqlite3_prepare_v2(db, get_temp, -1, &get_stmt, NULL);
     sqlite3_bind_text(get_stmt, 1, col, -1, SQLITE_STATIC);
-    sqlite3_bind_int( get_stmt, 2, row);
+    sqlite3_bind_int(get_stmt, 2, row);
 
     sqlite3_exec(db, (char *)get_stmt, search_callback, &ret, &err);
 
