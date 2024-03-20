@@ -1,3 +1,4 @@
+#include <string.h>
 #include <gtk/gtk.h>
 
 #include "gui.h"
@@ -14,6 +15,15 @@ enum {
 };
 
 ListView g_list_view;
+
+static void reallocate_size_of_frame(GtkWidget **window, GtkWidget **view_frame) {
+    GtkAllocation allocation;
+    gtk_widget_get_allocation(*window, &allocation);
+
+    const int min_width = (int)(0.45 * allocation.width);    
+
+    gtk_widget_set_size_request(GTK_WIDGET(*view_frame), min_width, -1);
+}
 
 static void remove_child_from(GtkWidget *container) {
     GtkWidget *child = gtk_bin_get_child(GTK_BIN(container));
@@ -70,6 +80,88 @@ static void list_refresh() {
     g_list_view.model = list_create_model();
 
     gtk_tree_view_set_model(GTK_TREE_VIEW(g_list_view.view), g_list_view.model);
+}
+
+static void switch_to_view_contact_frame(GtkTreeSelection *selection, GtkWidget *view_frame) {
+    remove_child_from(view_frame);
+
+    GtkTreeIter iter;
+    GtkTreeModel *model;
+    ContactText *con = malloc(sizeof(ContactText));
+    ContactEntries c_labels;
+
+    GtkWidget *grid;
+    GtkWidget *name_label;
+    GtkWidget *number_label;
+    GtkWidget *email_label;
+    GtkWidget *org_label;
+    GtkWidget *address_label;
+    GtkWidget *photo;
+    GtkWidget *edit_button;
+
+    if (gtk_tree_selection_get_selected(selection, &model, &iter)) {
+        gtk_tree_model_get(model, &iter, COL_ID     , &con->id       , -1);
+        gtk_tree_model_get(model, &iter, COL_NAME   , &con->name     , -1);
+        gtk_tree_model_get(model, &iter, COL_NUMBER , &con->number   , -1);
+        gtk_tree_model_get(model, &iter, COL_EMAIL  , &con->email    , -1);
+        gtk_tree_model_get(model, &iter, COL_ORG    , &con->org      , -1);
+        gtk_tree_model_get(model, &iter, COL_ADDRESS, &con->address  , -1);
+
+        gtk_frame_set_label(GTK_FRAME(view_frame), con->name);
+
+        grid = gtk_grid_new();
+
+        con->photoloc = db_get("PHOTOLOC", atoi(con->id));
+        if (strcmp(con->photoloc, "") != 0) {
+            printf("%s\n", con->photoloc);
+        }
+
+        photo = gtk_image_new_from_file(con->photoloc);
+        GdkPixbuf *buf = gtk_image_get_pixbuf(GTK_IMAGE(photo));
+        int width = gdk_pixbuf_get_width(buf);
+        int height = gdk_pixbuf_get_height(buf);
+        double scale_width = 500.0 / width;
+        double scale_height = 500.0 / height;
+        double scale_factor = MIN(scale_width, scale_height);
+        GdkPixbuf *scaled_buf = gdk_pixbuf_scale_simple(buf, width * scale_factor, height * scale_factor, GDK_INTERP_BILINEAR);
+        photo = gtk_image_new_from_pixbuf(scaled_buf);
+
+        name_label      = gtk_label_new("Name: ");
+        number_label    = gtk_label_new("Number: ");
+        email_label     = gtk_label_new("Email: ");
+        org_label	    = gtk_label_new("Org: ");
+        address_label   = gtk_label_new("Address: ");
+        c_labels.name= gtk_label_new(con->name);
+        c_labels.number= gtk_label_new(con->number);
+        c_labels.email= gtk_label_new(con->email);
+        c_labels.org= gtk_label_new(con->org);
+        c_labels.address= gtk_label_new(con->address);
+        edit_button = gtk_button_new_with_label("Edit");
+
+//                                                                x, y, w, h
+        gtk_grid_attach(GTK_GRID(grid), photo                   , 1, 0, 2, 1);
+        gtk_grid_attach(GTK_GRID(grid), name_label              , 1, 1, 1, 1);
+        gtk_grid_attach(GTK_GRID(grid), number_label            , 1, 2, 1, 1);
+        gtk_grid_attach(GTK_GRID(grid), email_label             , 1, 3, 1, 1);
+        gtk_grid_attach(GTK_GRID(grid), org_label               , 1, 4, 1, 1);
+        gtk_grid_attach(GTK_GRID(grid), address_label           , 1, 5, 1, 1);
+        gtk_grid_attach(GTK_GRID(grid), c_labels.name           , 2, 1, 1, 1);
+        gtk_grid_attach(GTK_GRID(grid), c_labels.number         , 2, 2, 1, 1);
+        gtk_grid_attach(GTK_GRID(grid), c_labels.email          , 2, 3, 1, 1);
+        gtk_grid_attach(GTK_GRID(grid), c_labels.org            , 2, 4, 1, 1);
+        gtk_grid_attach(GTK_GRID(grid), c_labels.address        , 2, 5, 1, 1);
+        gtk_grid_attach(GTK_GRID(grid), edit_button             , 1, 6, 2, 1);
+
+        gtk_container_add(GTK_CONTAINER(view_frame), grid);
+        gtk_widget_show_all(view_frame);
+
+        g_free(con->id);
+        g_free(con->name);
+        g_free(con->number);
+        g_free(con->email);
+        g_free(con->org);
+        g_free(con->address);
+    }
 }
 
 static void on_file_select(GtkFileChooserButton *button, gpointer data) {
@@ -175,6 +267,7 @@ static void main_window(GtkApplication *app) {
                         GtkWidget *refresh_icon;
                 GtkWidget *list_frame;
                     ListView *list;
+                        GtkTreeSelection *list_selection;
                 GtkWidget *view_frame;
 
     list = &g_list_view;
@@ -186,9 +279,9 @@ static void main_window(GtkApplication *app) {
     new_contact_button = gtk_button_new_with_label("+");
     refresh_button = gtk_button_new();
     refresh_icon = gtk_image_new_from_icon_name("view-refresh-symbolic", GTK_ICON_SIZE_BUTTON);
-    list_frame = gtk_frame_new("");
+    list_frame = gtk_frame_new(NULL);
     list->view = list_create_view();
-    view_frame = gtk_frame_new("");
+    view_frame = gtk_frame_new(NULL);
 
     gtk_frame_set_label_align(GTK_FRAME(main_frame), 0.5, 1.0);
 
@@ -201,9 +294,15 @@ static void main_window(GtkApplication *app) {
     gtk_button_set_image(GTK_BUTTON(refresh_button), refresh_icon);
     g_signal_connect(refresh_button, "clicked", G_CALLBACK(list_refresh), list);
 
+    g_signal_connect(&win, "size-allocate", G_CALLBACK(reallocate_size_of_frame), &view_frame);
+
     gtk_widget_set_hexpand(list_frame, TRUE);
     gtk_widget_set_vexpand(list_frame, TRUE);
     gtk_frame_set_label_align(GTK_FRAME(list_frame), 0.5, 1.0);
+
+    list_selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(list->view));
+    gtk_tree_selection_set_mode(GTK_TREE_SELECTION(list_selection), GTK_SELECTION_SINGLE);
+    g_signal_connect(list_selection, "changed", G_CALLBACK(switch_to_view_contact_frame), view_frame);
 
     gtk_widget_set_hexpand(view_frame, TRUE);
     gtk_widget_set_vexpand(view_frame, TRUE);
