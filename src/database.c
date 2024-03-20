@@ -26,7 +26,7 @@ char *db_get(char *col, int row) {
     char temp[100] = "";
     char row_str[50] = "";
 
-    sprintf(row_str, "%i", row);
+    snprintf(row_str, 10, "%i", row);
 
     str_size = strlen(query) + strlen(col) + strlen(row_str);
 

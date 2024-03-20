@@ -3,13 +3,6 @@
 #include "gui.h"
 #include "database.h"
 
-static void remove_child_from(GtkWidget *container) {
-    GtkWidget *child = gtk_bin_get_child(GTK_BIN(container));
-    if (child != NULL) {
-        gtk_container_remove(GTK_CONTAINER(container), child); 
-    }
-}
-
 enum {
     COL_ID = 0,
     COL_NAME,
@@ -19,6 +12,15 @@ enum {
     COL_ADDRESS,
     NUM_COLS
 };
+
+ListView g_list_view;
+
+static void remove_child_from(GtkWidget *container) {
+    GtkWidget *child = gtk_bin_get_child(GTK_BIN(container));
+    if (child != NULL) {
+        gtk_container_remove(GTK_CONTAINER(container), child); 
+    }
+}
 
 static GtkTreeModel *list_create_model() {
     int max = db_max_id();
@@ -64,22 +66,15 @@ static GtkWidget *list_create_view() {
     return view;
 }
 
-static void list_refresh(GtkWidget *nu, ListView *view) {
-    view->model = list_create_model();
+static void list_refresh() {
+    g_list_view.model = list_create_model();
 
-    if (gtk_tree_view_get_model(GTK_TREE_VIEW(view)) != NULL) {
-        g_object_unref(gtk_tree_view_get_model(GTK_TREE_VIEW(view)));
-    }
-
-
-    gtk_tree_view_set_model(GTK_TREE_VIEW(view->view), view->model);
+    gtk_tree_view_set_model(GTK_TREE_VIEW(g_list_view.view), g_list_view.model);
 }
 
 static void on_file_select(GtkFileChooserButton *button, gpointer data) {
     const gchar *path = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(button));
-
     gchar **location = (gchar **)data;
-
     *location = g_strdup(path);
 }
 
@@ -92,6 +87,7 @@ static void save_contact(GtkWidget *nu, gpointer data) {
     con->con->address   = (char *)gtk_entry_get_text(GTK_ENTRY(con->enter->address));
 
     db_save_contact(con);
+    list_refresh();
 }
 
 static void switch_to_new_contact_frame(GtkWidget *nu, GtkWidget *view_frame) {
@@ -145,22 +141,22 @@ static void switch_to_new_contact_frame(GtkWidget *nu, GtkWidget *view_frame) {
 
     new_contact_grid = gtk_grid_new();
     gtk_grid_attach(GTK_GRID(new_contact_grid), name_label,         0, 1, 1, 1);
-    gtk_grid_attach(GTK_GRID(new_contact_grid), enter->name,         1, 1, 1, 1);
+    gtk_grid_attach(GTK_GRID(new_contact_grid), enter->name,        1, 1, 1, 1);
 
     gtk_grid_attach(GTK_GRID(new_contact_grid), number_label,       0, 2, 1, 1);
-    gtk_grid_attach(GTK_GRID(new_contact_grid), enter->number,       1, 2, 1, 1);
+    gtk_grid_attach(GTK_GRID(new_contact_grid), enter->number,      1, 2, 1, 1);
 
     gtk_grid_attach(GTK_GRID(new_contact_grid), email_label,        0, 3, 1, 1);
-    gtk_grid_attach(GTK_GRID(new_contact_grid), enter->email,        1, 3, 1, 1);
+    gtk_grid_attach(GTK_GRID(new_contact_grid), enter->email,       1, 3, 1, 1);
 
     gtk_grid_attach(GTK_GRID(new_contact_grid), org_label,          0, 4, 1, 1);
-    gtk_grid_attach(GTK_GRID(new_contact_grid), enter->org,          1, 4, 1, 1);
+    gtk_grid_attach(GTK_GRID(new_contact_grid), enter->org,         1, 4, 1, 1);
 
     gtk_grid_attach(GTK_GRID(new_contact_grid), address_label,      0, 5, 1, 1);
-    gtk_grid_attach(GTK_GRID(new_contact_grid), enter->address,      1, 5, 1, 1);
+    gtk_grid_attach(GTK_GRID(new_contact_grid), enter->address,     1, 5, 1, 1);
 
     gtk_grid_attach(GTK_GRID(new_contact_grid), photoloc_label,     0, 6, 1, 1);
-    gtk_grid_attach(GTK_GRID(new_contact_grid), enter->photoloc,     1, 6, 1, 1);
+    gtk_grid_attach(GTK_GRID(new_contact_grid), enter->photoloc,    1, 6, 1, 1);
 
     gtk_grid_attach(GTK_GRID(new_contact_grid), save_button,        2, 7, 1, 1);
 
@@ -175,17 +171,21 @@ static void main_window(GtkApplication *app) {
             GtkWidget *main_grid;
                 GtkWidget *new_box;
                     GtkWidget *new_contact_button;
+                    GtkWidget *refresh_button;
+                        GtkWidget *refresh_icon;
                 GtkWidget *list_frame;
                     ListView *list;
                 GtkWidget *view_frame;
 
-    list = (ListView *)malloc(sizeof(ListView));
+    list = &g_list_view;
 
     win = gtk_application_window_new(app);
     main_frame = gtk_frame_new("AKA");
     main_grid = gtk_grid_new();
     new_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     new_contact_button = gtk_button_new_with_label("+");
+    refresh_button = gtk_button_new();
+    refresh_icon = gtk_image_new_from_icon_name("view-refresh-symbolic", GTK_ICON_SIZE_BUTTON);
     list_frame = gtk_frame_new("");
     list->view = list_create_view();
     view_frame = gtk_frame_new("");
@@ -194,10 +194,12 @@ static void main_window(GtkApplication *app) {
 
     gtk_widget_set_hexpand(new_box, TRUE);
     gtk_box_pack_start(GTK_BOX(new_box), new_contact_button, FALSE, FALSE, 0);
-
-    list_refresh(NULL, list);
+    gtk_box_pack_start(GTK_BOX(new_box), refresh_button, FALSE, FALSE, 0);
 
     g_signal_connect(new_contact_button, "clicked", G_CALLBACK(switch_to_new_contact_frame), view_frame);
+
+    gtk_button_set_image(GTK_BUTTON(refresh_button), refresh_icon);
+    g_signal_connect(refresh_button, "clicked", G_CALLBACK(list_refresh), list);
 
     gtk_widget_set_hexpand(list_frame, TRUE);
     gtk_widget_set_vexpand(list_frame, TRUE);
@@ -215,8 +217,8 @@ static void main_window(GtkApplication *app) {
 
     gtk_container_add(GTK_CONTAINER(main_frame), main_grid);
 
-#define WINDOW_WIDTH 1280
-#define WINDOW_HEIGHT 720
+    const int WINDOW_WIDTH = 1280;
+    const int WINDOW_HEIGHT = 720;
 
     gtk_container_add(GTK_CONTAINER(win), main_frame);
     gtk_window_set_default_size(GTK_WINDOW(win), WINDOW_WIDTH, WINDOW_HEIGHT);
