@@ -88,7 +88,7 @@ int db_max_id() {
     return max_id;
 }
 
-void db_save_contact(Contact *con) {
+void db_save_contact(Contact *con, int mode) {
     sqlite3 *db;
     sqlite3_stmt *make_new_contact;
     int rc;
