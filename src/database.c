@@ -42,6 +42,21 @@ char *db_get(char *col, int row) {
     return strcpy(ret, temp); 
 }
 
+char *db_get_table_name() {
+    sqlite3 *db;
+    char *err;
+    char *query = "SELECT name FROM sqlite_schema WHERE type = 'table' AND name NOT LIKE 'sqlite_%';";
+    char temp[100] = "";
+
+    sqlite3_open("Contacts.db", &db);
+
+    sqlite3_exec(db, query, search_callback, &temp, &err);
+
+    char *ret = malloc(strlen(temp));
+
+    return strcpy(ret, temp);
+}
+
 static int iterator_callback(void *data, int argc, char **argv, char **nu) {
     int *max_id = (int *)data;
 

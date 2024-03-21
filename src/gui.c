@@ -5,7 +5,8 @@
 #include "database.h"
 
 enum {
-    COL_ID = 0,
+    COL_BOOK = 0,
+    COL_ID, 
     COL_NAME,
     COL_NUMBER,
     COL_EMAIL,
@@ -35,9 +36,13 @@ static void remove_child_from(GtkWidget *container) {
 static GtkTreeModel *list_create_model() {
     int max = db_max_id();
 
-    GtkTreeIter iter;
-    GtkListStore *store = gtk_list_store_new(6, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+    GtkTreeIter parent_iter;
+    GtkTreeIter child_iter;
+    GtkTreeStore *store = gtk_tree_store_new(NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 
+    char *table_name = db_get_table_name();
+    gtk_tree_store_append(store, &parent_iter, NULL);
+    gtk_tree_store_set(store, &parent_iter, COL_BOOK, table_name, -1);
     for (int i = 1; i < max + 1; i++) {
         ContactText con;
 
@@ -48,8 +53,8 @@ static GtkTreeModel *list_create_model() {
         con.org = db_get("ORG", i);
         con.address = db_get("ADDRESS", i);
 
-        gtk_list_store_append(store, &iter);
-        gtk_list_store_set(store, &iter, 0, con.id, 1, con.name, 2, con.number, 3, con.email, 4, con.org, 5, con.address, -1);
+        gtk_tree_store_append(store, &child_iter, &parent_iter);
+        gtk_tree_store_set(store, &child_iter, 0, NULL, 1, con.id, 2, con.name, 3, con.number, 4, con.email, 5, con.org, 6, con.address, -1);
     }
     GtkTreeModel *model = GTK_TREE_MODEL(store);
 
@@ -61,6 +66,7 @@ static GtkWidget *list_create_view() {
     GtkWidget *view = gtk_tree_view_new();
 
     renderer = gtk_cell_renderer_text_new();
+    gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Book"     , renderer, "text", COL_BOOK, NULL);
     gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "ID"       , renderer, "text", COL_ID, NULL);
     gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Name"     , renderer, "text", COL_NAME, NULL);
     gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Number"   , renderer, "text", COL_NUMBER, NULL);
@@ -84,7 +90,6 @@ static void list_refresh() {
 
 static void switch_to_view_contact_frame(GtkTreeSelection *selection, GtkWidget *view_frame) {
     remove_child_from(view_frame);
-
     GtkTreeIter iter;
     GtkTreeModel *model;
     ContactText *con = malloc(sizeof(ContactText));
@@ -101,6 +106,9 @@ static void switch_to_view_contact_frame(GtkTreeSelection *selection, GtkWidget 
 
     if (gtk_tree_selection_get_selected(selection, &model, &iter)) {
         gtk_tree_model_get(model, &iter, COL_ID     , &con->id       , -1);
+        if (con->id == NULL) {
+            return;
+        }
         gtk_tree_model_get(model, &iter, COL_NAME   , &con->name     , -1);
         gtk_tree_model_get(model, &iter, COL_NUMBER , &con->number   , -1);
         gtk_tree_model_get(model, &iter, COL_EMAIL  , &con->email    , -1);
@@ -113,18 +121,18 @@ static void switch_to_view_contact_frame(GtkTreeSelection *selection, GtkWidget 
 
         con->photoloc = db_get("PHOTOLOC", atoi(con->id));
         if (strcmp(con->photoloc, "") != 0) {
-            printf("%s\n", con->photoloc);
+            photo = gtk_image_new_from_file(con->photoloc);
+            GdkPixbuf *buf = gtk_image_get_pixbuf(GTK_IMAGE(photo));
+            int width = gdk_pixbuf_get_width(buf);
+            int height = gdk_pixbuf_get_height(buf);
+            double scale_width = 500.0 / width;
+            double scale_height = 500.0 / height;
+            double scale_factor = MIN(scale_width, scale_height);
+            GdkPixbuf *scaled_buf = gdk_pixbuf_scale_simple(buf, width * scale_factor, height * scale_factor, GDK_INTERP_BILINEAR);
+            photo = gtk_image_new_from_pixbuf(scaled_buf);
+            gtk_grid_attach(GTK_GRID(grid), photo                   , 1, 0, 2, 1);
         }
 
-        photo = gtk_image_new_from_file(con->photoloc);
-        GdkPixbuf *buf = gtk_image_get_pixbuf(GTK_IMAGE(photo));
-        int width = gdk_pixbuf_get_width(buf);
-        int height = gdk_pixbuf_get_height(buf);
-        double scale_width = 500.0 / width;
-        double scale_height = 500.0 / height;
-        double scale_factor = MIN(scale_width, scale_height);
-        GdkPixbuf *scaled_buf = gdk_pixbuf_scale_simple(buf, width * scale_factor, height * scale_factor, GDK_INTERP_BILINEAR);
-        photo = gtk_image_new_from_pixbuf(scaled_buf);
 
         name_label      = gtk_label_new("Name: ");
         number_label    = gtk_label_new("Number: ");
@@ -139,7 +147,6 @@ static void switch_to_view_contact_frame(GtkTreeSelection *selection, GtkWidget 
         edit_button = gtk_button_new_with_label("Edit");
 
 //                                                                x, y, w, h
-        gtk_grid_attach(GTK_GRID(grid), photo                   , 1, 0, 2, 1);
         gtk_grid_attach(GTK_GRID(grid), name_label              , 1, 1, 1, 1);
         gtk_grid_attach(GTK_GRID(grid), number_label            , 1, 2, 1, 1);
         gtk_grid_attach(GTK_GRID(grid), email_label             , 1, 3, 1, 1);
