@@ -88,7 +88,47 @@ int db_max_id() {
     return max_id;
 }
 
-void db_save_contact(Contact *con, int mode) {
+void db_edit_contact(ContactText *con) {
+    sqlite3 *db;
+    sqlite3_stmt *make_new_contact;
+    int rc;
+
+    rc = sqlite3_open("Contacts.db", &db);
+    if (rc) {
+        printf("Database couldn't open!\n%s\n", sqlite3_errmsg(db));
+        return;
+    }
+
+    char *edit_contact_temp = "UPDATE contacts SET " \
+                              "NAME = ?, " \
+                              "NUMBER = ?, " \
+                              "EMAIL = ?, " \
+                              "ORG = ?, " \
+                              "ADDRESS = ?, " \
+                              "PHOTOLOC = ? " \
+                              "WHERE ID = ?;";
+    if (sqlite3_prepare_v2(db, edit_contact_temp, -1, &make_new_contact, NULL) != SQLITE_OK) {
+        fprintf(stderr, "Issue with statement: %s\n", sqlite3_errmsg(db));
+        return;
+    }
+    sqlite3_bind_text(make_new_contact,   1, con->name       , -1, SQLITE_STATIC);
+    sqlite3_bind_text(make_new_contact,   2, con->number     , -1, SQLITE_STATIC);
+    sqlite3_bind_text(make_new_contact,   3, con->email      , -1, SQLITE_STATIC);
+    sqlite3_bind_text(make_new_contact,   4, con->org        , -1, SQLITE_STATIC);
+    sqlite3_bind_text(make_new_contact,   5, con->address    , -1, SQLITE_STATIC);
+    sqlite3_bind_text(make_new_contact,   6, con->photoloc   , -1, SQLITE_STATIC);
+    sqlite3_bind_int( make_new_contact,   7, atoi(con->id));
+
+    printf("%s\n", sqlite3_expanded_sql(make_new_contact));
+
+    if (sqlite3_step(make_new_contact) != SQLITE_DONE) {
+        fprintf(stderr, "Issue with statement: %s\n", sqlite3_errmsg(db));
+    }
+
+    sqlite3_finalize(make_new_contact);
+}
+
+void db_save_contact(ContactText *con) {
     sqlite3 *db;
     sqlite3_stmt *make_new_contact;
     int rc;
@@ -120,12 +160,12 @@ void db_save_contact(Contact *con, int mode) {
         return;
     }
     sqlite3_bind_int( make_new_contact,   1, db_max_id() + 1);
-    sqlite3_bind_text(make_new_contact,   2, con->con->name       , -1, SQLITE_STATIC);
-    sqlite3_bind_text(make_new_contact,   3, con->con->number     , -1, SQLITE_STATIC);
-    sqlite3_bind_text(make_new_contact,   4, con->con->email      , -1, SQLITE_STATIC);
-    sqlite3_bind_text(make_new_contact,   5, con->con->org        , -1, SQLITE_STATIC);
-    sqlite3_bind_text(make_new_contact,   6, con->con->address    , -1, SQLITE_STATIC);
-    sqlite3_bind_text(make_new_contact,   7, con->con->photoloc   , -1, SQLITE_STATIC);
+    sqlite3_bind_text(make_new_contact,   2, con->name       , -1, SQLITE_STATIC);
+    sqlite3_bind_text(make_new_contact,   3, con->number     , -1, SQLITE_STATIC);
+    sqlite3_bind_text(make_new_contact,   4, con->email      , -1, SQLITE_STATIC);
+    sqlite3_bind_text(make_new_contact,   5, con->org        , -1, SQLITE_STATIC);
+    sqlite3_bind_text(make_new_contact,   6, con->address    , -1, SQLITE_STATIC);
+    sqlite3_bind_text(make_new_contact,   7, con->photoloc   , -1, SQLITE_STATIC);
 
     if (sqlite3_step(make_new_contact) != SQLITE_DONE) {
         fprintf(stderr, "Issue with statement: %s\n", sqlite3_errmsg(db));
