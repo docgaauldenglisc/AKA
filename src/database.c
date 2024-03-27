@@ -5,6 +5,9 @@
 #include "gui.h"
 #include "database.h"
 
+int g_search_count = 0;
+idList g_ids = {.ids = NULL, .id_amount = 0};
+
 static int search_callback(void *data, int argc, char **argv, char **nu) {
     char *temp = (char *)data;
 
@@ -17,6 +20,46 @@ static int search_callback(void *data, int argc, char **argv, char **nu) {
     return 0;
 }
 
+static int search_set_count(void *data, int argc, char **argv, char **az_col_name) {
+    g_ids.id_amount++;
+
+    return 0;
+}
+
+static int search_set_ids(void *data, int argc, char **argv, char **az_col_name) {
+    g_ids.ids[g_search_count] = atoi(argv[0]);
+
+    g_search_count++;
+    return 0;
+}
+
+idList db_search(char *query) {
+    sqlite3 *db;
+    char *err = 0;
+    sqlite3_stmt *stmt;
+
+    g_ids.id_amount = 0;
+    g_ids.ids = NULL;
+
+    sqlite3_open("Contacts.db", &db);
+
+    const char *search_stmt = "SELECT * FROM Contacts WHERE NAME LIKE ?;";
+
+    char *pattern = sqlite3_mprintf("%s%", query);
+    if(sqlite3_prepare_v2(db, search_stmt, -1, &stmt, NULL) != SQLITE_OK) {
+        fprintf(stderr, "Issue with statement: %s\n", sqlite3_errmsg(db));
+    }
+    sqlite3_bind_text(stmt, 1, pattern, -1, SQLITE_STATIC);
+    char *stmt_char = sqlite3_expanded_sql(stmt);
+
+    g_ids.id_amount = 0;
+    sqlite3_exec(db, stmt_char, search_set_count, 0, &err);
+    g_search_count = 0;
+    g_ids.ids = (int *)malloc(g_ids.id_amount* sizeof(int));
+    sqlite3_exec(db, stmt_char, search_set_ids, 0, &err);
+
+    return g_ids;
+}
 
 char *db_get(char *col, int row) {
     sqlite3 *db;
@@ -118,8 +161,6 @@ void db_edit_contact(ContactText *con) {
     sqlite3_bind_text(make_new_contact,   5, con->address    , -1, SQLITE_STATIC);
     sqlite3_bind_text(make_new_contact,   6, con->photoloc   , -1, SQLITE_STATIC);
     sqlite3_bind_int( make_new_contact,   7, atoi(con->id));
-
-    printf("%s\n", sqlite3_expanded_sql(make_new_contact));
 
     if (sqlite3_step(make_new_contact) != SQLITE_DONE) {
         fprintf(stderr, "Issue with statement: %s\n", sqlite3_errmsg(db));

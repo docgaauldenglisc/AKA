@@ -1,3 +1,6 @@
+#include <stdlib.h>
+#include <gtk/gtk.h>
+
 #include "gui.h"
 #include "database.h"
 

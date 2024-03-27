@@ -1,7 +1,7 @@
 #ifndef GUI_H
 #define GUI_H
 
-#include <gtk/gtk.h> 
+#include <gtk/gtk.h>
 
 typedef struct {
     char *photoloc;
