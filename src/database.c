@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <sqlite3.h>
@@ -133,7 +134,7 @@ int db_max_id() {
 
 void db_edit_contact(ContactText *con) {
     sqlite3 *db;
-    sqlite3_stmt *make_new_contact;
+    sqlite3_stmt *edit_contact;
     int rc;
 
     rc = sqlite3_open("Contacts.db", &db);
@@ -148,25 +149,28 @@ void db_edit_contact(ContactText *con) {
                               "EMAIL = ?, " \
                               "ORG = ?, " \
                               "ADDRESS = ?, " \
+                              "EXTRA = ?, " \
                               "PHOTOLOC = ? " \
                               "WHERE ID = ?;";
-    if (sqlite3_prepare_v2(db, edit_contact_temp, -1, &make_new_contact, NULL) != SQLITE_OK) {
+    if (sqlite3_prepare_v2(db, edit_contact_temp, -1, &edit_contact, NULL) != SQLITE_OK) {
         fprintf(stderr, "Issue with statement: %s\n", sqlite3_errmsg(db));
         return;
     }
-    sqlite3_bind_text(make_new_contact,   1, con->name       , -1, SQLITE_STATIC);
-    sqlite3_bind_text(make_new_contact,   2, con->number     , -1, SQLITE_STATIC);
-    sqlite3_bind_text(make_new_contact,   3, con->email      , -1, SQLITE_STATIC);
-    sqlite3_bind_text(make_new_contact,   4, con->org        , -1, SQLITE_STATIC);
-    sqlite3_bind_text(make_new_contact,   5, con->address    , -1, SQLITE_STATIC);
-    sqlite3_bind_text(make_new_contact,   6, con->photoloc   , -1, SQLITE_STATIC);
-    sqlite3_bind_int( make_new_contact,   7, atoi(con->id));
+    sqlite3_bind_text(edit_contact,   1, con->name      , -1, SQLITE_STATIC);
+    sqlite3_bind_text(edit_contact,   2, con->number    , -1, SQLITE_STATIC);
+    sqlite3_bind_text(edit_contact,   3, con->email     , -1, SQLITE_STATIC);
+    sqlite3_bind_text(edit_contact,   4, con->org       , -1, SQLITE_STATIC);
+    sqlite3_bind_text(edit_contact,   5, con->address   , -1, SQLITE_STATIC);
+    sqlite3_bind_text(edit_contact,   6, con->extra     , -1, SQLITE_STATIC);
+    sqlite3_bind_text(edit_contact,   7, con->photoloc  , -1, SQLITE_STATIC);
+    sqlite3_bind_int( edit_contact,   8, atoi(con->id));
 
-    if (sqlite3_step(make_new_contact) != SQLITE_DONE) {
+    puts(sqlite3_expanded_sql(edit_contact));
+    if (sqlite3_step(edit_contact) != SQLITE_DONE) {
         fprintf(stderr, "Issue with statement: %s\n", sqlite3_errmsg(db));
     }
 
-    sqlite3_finalize(make_new_contact);
+    sqlite3_finalize(edit_contact);
 }
 
 void db_save_contact(ContactText *con) {
@@ -187,8 +191,10 @@ void db_save_contact(ContactText *con) {
                              "EMAIL," \
                              "ORG," \
                              "ADDRESS," \
+                             "EXTRA," \
                              "PHOTOLOC) " \
                              "VALUES(" \
+                             "?," \
                              "?," \
                              "?," \
                              "?," \
@@ -206,7 +212,8 @@ void db_save_contact(ContactText *con) {
     sqlite3_bind_text(make_new_contact,   4, con->email      , -1, SQLITE_STATIC);
     sqlite3_bind_text(make_new_contact,   5, con->org        , -1, SQLITE_STATIC);
     sqlite3_bind_text(make_new_contact,   6, con->address    , -1, SQLITE_STATIC);
-    sqlite3_bind_text(make_new_contact,   7, con->photoloc   , -1, SQLITE_STATIC);
+    sqlite3_bind_text(make_new_contact,   7, con->extra      , -1, SQLITE_STATIC);
+    sqlite3_bind_text(make_new_contact,   8, con->photoloc   , -1, SQLITE_STATIC);
 
     if (sqlite3_step(make_new_contact) != SQLITE_DONE) {
         fprintf(stderr, "Issue with statement: %s\n", sqlite3_errmsg(db));
@@ -233,6 +240,7 @@ int db_init() {
                                   "EMAIL TEXT, " \ 
                                   "ORG TEXT, " \
                                   "ADDRESS TEXT, " \
+                                  "EXTRA TEXT, " \
                                   "PHOTOLOC TEXT " \
                                   ");";
 

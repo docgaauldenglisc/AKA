@@ -4,13 +4,14 @@
 #include <gtk/gtk.h>
 
 typedef struct {
-    char *photoloc;
     char *id;
     char *name;
     char *number;
     char *email;
     char *org;
     char *address;
+    char *extra;
+    char *photoloc;
 } ContactText;
 
 typedef struct {
@@ -19,6 +20,7 @@ typedef struct {
     GtkWidget *email;
     GtkWidget *org;
     GtkWidget *address;
+    GtkWidget *extra;
     GtkWidget *photoloc;
 } ContactEntries;
 
