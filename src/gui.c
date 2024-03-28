@@ -20,7 +20,7 @@ GtkWidget *g_view_frame;
 ContactText g_contact;
 
 static void remove_child_from(GtkWidget *container);
-static void search_callback();
+static void search_callback(GtkWidget *search_entry, gpointer data);
 static GtkTreeModel *list_create_model();
 static GtkWidget *list_create_view();
 static void list_refresh();
@@ -51,34 +51,43 @@ static void search_callback(GtkWidget *search_entry, gpointer data) {
     }
 
     idList ids = {.ids = NULL, .id_amount = 0};
+    puts("1");
 
     ids = db_search(query);
+    puts("2");
 
-    remove_child_from(GTK_WIDGET(list_view));
+    if (gtk_tree_view_get_model(GTK_TREE_VIEW(list_view)) != NULL) {
+        g_object_unref(gtk_tree_view_get_model(GTK_TREE_VIEW(list_view)));
+    }
+
+    puts("3");
 
     GtkTreeIter iter;
+    puts("4");
 
     int max = ids.id_amount;
+    puts("5");
 
-    GtkListStore *store = gtk_list_store_new(NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+    GtkListStore *store = gtk_list_store_new(NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+    puts("6");
 
     for (int i = 0; i < max; i++) {
-        char id[50];
-        char name[50];
-        char number[50];
-        char email[50];
-        char org[50];
-        char address[50];
+        char *id;
+        char *name;
+        char *number;
+        char *email;
+        char *org;
+        char *address;
 
-        db_get("ID", ids.ids[i]);
-        db_get("NAME", ids.ids[i]);
-        db_get("NUMBER", ids.ids[i]);
-        db_get("EMAIL", ids.ids[i]);
-        db_get("ORG", ids.ids[i]);
-        db_get("ADDRESS", ids.ids[i]);
+        id = db_get("ID", ids.ids[i]);
+        name = db_get("NAME", ids.ids[i]);
+        number = db_get("NUMBER", ids.ids[i]);
+        email = db_get("EMAIL", ids.ids[i]);
+        org = db_get("ORG", ids.ids[i]);
+        address = db_get("ADDRESS", ids.ids[i]);
 
         gtk_list_store_append(GTK_LIST_STORE(store), &iter);
-        gtk_list_store_set(store, &iter, COL_ID, id, COL_NAME, name, COL_NUMBER, number, COL_EMAIL, email, COL_ORG, org, COL_ADDRESS, address, -1);
+        gtk_list_store_set(store, &iter, 0, db_get_table_name(), 1, id, 2, name, 3, number, 4, email, 5, org, 6, address, -1);
     }
     GtkTreeModel *model = GTK_TREE_MODEL(store);
 
@@ -447,7 +456,7 @@ static void main_window(GtkApplication *app) {
     gtk_widget_set_hexpand(new_box, TRUE);
     gtk_box_pack_start(GTK_BOX(new_box), new_contact_button, FALSE, FALSE, 0);
 
-    g_signal_connect(search_entry, "search-changed", G_CALLBACK(search_callback), NULL);
+    g_signal_connect(search_entry, "search-changed", G_CALLBACK(search_callback), list->view);
 
     g_signal_connect(new_contact_button, "clicked", G_CALLBACK(switch_to_new_contact_frame), view_frame);
 
