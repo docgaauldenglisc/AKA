@@ -157,7 +157,6 @@ static void gui_edit_contact(GtkWidget *nu, gpointer data) {
     con->con->org       = (char *)gtk_entry_get_text(GTK_ENTRY(con->enter->org));
     con->con->address   = (char *)gtk_entry_get_text(GTK_ENTRY(con->enter->address));
     con->con->extra     = (char *)gtk_entry_get_text(GTK_ENTRY(con->enter->extra));
-    puts(con->con->photoloc);
 
     db_edit_contact(con->con);
     list_refresh();
