@@ -6,7 +6,8 @@
 typedef struct {
     char *id;
     char *name;
-    char *number;
+    char *title;
+    char *phone;
     char *email;
     char *org;
     char *address;
@@ -16,7 +17,8 @@ typedef struct {
 
 typedef struct {
     GtkWidget *name;
-    GtkWidget *number;
+    GtkWidget *title;
+    GtkWidget *phone;
     GtkWidget *email;
     GtkWidget *org;
     GtkWidget *address;
