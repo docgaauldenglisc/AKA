@@ -159,7 +159,7 @@ void db_edit_contact(ContactText *con) {
                               "PHOTOLOC = ? " \
                               "WHERE ID = ?;";
     if (sqlite3_prepare_v2(db, edit_contact_temp, -1, &edit_contact, NULL) != SQLITE_OK) {
-        fprintf(stderr, "Issue with statement: %s\n", sqlite3_errmsg(db));
+        printf("Issue with statement: \n%s\n", sqlite3_errmsg(db));
         return;
     }
     sqlite3_bind_text(edit_contact,   1, con->name      , -1, SQLITE_STATIC);
@@ -171,9 +171,8 @@ void db_edit_contact(ContactText *con) {
     sqlite3_bind_text(edit_contact,   7, con->photoloc  , -1, SQLITE_STATIC);
     sqlite3_bind_int( edit_contact,   8, atoi(con->id));
 
-    puts(sqlite3_expanded_sql(edit_contact));
     if (sqlite3_step(edit_contact) != SQLITE_DONE) {
-        fprintf(stderr, "Issue with statement: %s\n", sqlite3_errmsg(db));
+        printf("Issue with statement: \n%s\n", sqlite3_errmsg(db));
     }
 
     sqlite3_finalize(edit_contact);
@@ -209,7 +208,7 @@ void db_save_contact(ContactText *con) {
                              "?," \
                              "?);";
     if (sqlite3_prepare_v2(db, new_contact_temp, -1, &make_new_contact, NULL) != SQLITE_OK) {
-        fprintf(stderr, "Issue with statement: %s\n", sqlite3_errmsg(db));
+        printf("Issue with statement: \n%s\n", sqlite3_errmsg(db));
         return;
     }
     sqlite3_bind_int( make_new_contact,   1, db_max_id() + 1);
@@ -222,7 +221,7 @@ void db_save_contact(ContactText *con) {
     sqlite3_bind_text(make_new_contact,   8, con->photoloc   , -1, SQLITE_STATIC);
 
     if (sqlite3_step(make_new_contact) != SQLITE_DONE) {
-        fprintf(stderr, "Issue with statement: %s\n", sqlite3_errmsg(db));
+        printf("Issue with statement: \n%s\n", sqlite3_errmsg(db));
     }
 
     sqlite3_finalize(make_new_contact);

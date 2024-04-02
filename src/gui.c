@@ -50,25 +50,19 @@ static void search_callback(GtkWidget *search_entry, gpointer data) {
     }
 
     idList ids = {.ids = NULL, .id_amount = 0};
-    puts("1");
 
     ids = db_search(query);
-    puts("2");
 
     if (gtk_tree_view_get_model(GTK_TREE_VIEW(list_view)) != NULL) {
         g_object_unref(gtk_tree_view_get_model(GTK_TREE_VIEW(list_view)));
     }
 
-    puts("3");
 
     GtkTreeIter iter;
-    puts("4");
 
     int max = ids.id_amount;
-    puts("5");
 
     GtkListStore *store = gtk_list_store_new(NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
-    puts("6");
 
     for (int i = 0; i < max; i++) {
         char *id;
@@ -270,7 +264,6 @@ static void switch_to_view_contact_frame(GtkTreeSelection *selection, GtkWidget 
         gtk_tree_model_get(model, &iter, COL_ORG    , &g_contact.org      , -1);
         gtk_tree_model_get(model, &iter, COL_ADDRESS, &g_contact.address  , -1);
         g_contact.extra = db_get("EXTRA", atoi(g_contact.id));
-        puts(g_contact.extra);
 
         gtk_frame_set_label(GTK_FRAME(view_frame), g_contact.name);
 
