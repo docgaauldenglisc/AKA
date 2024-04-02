@@ -10,7 +10,6 @@ void db_save_contact(ContactText *con);
 void db_edit_contact(ContactText *con);
 idList db_search(char *query);
 char *db_get(char *col, int row);
-char *db_get_table_name();
 int db_max_id();
 int db_init();
 

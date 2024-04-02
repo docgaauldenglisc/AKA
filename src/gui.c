@@ -7,6 +7,7 @@
 enum {
     COL_ID = 0, 
     COL_NAME,
+    COL_TITLE,
     COL_NUMBER,
     COL_EMAIL,
     COL_ORG,
