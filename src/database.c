@@ -19,7 +19,7 @@ int db_init();
 static int search_callback(void *data, int argc, char **argv, char **nu) {
     char **temp = (char **)data;
     unsigned long length = strlen(argv[0]);
-    *temp = malloc(sizeof(char) * length);
+    *temp = malloc(sizeof(char) * length + 1);
 
     if (argc > 0 && argv[0] != NULL) {
         snprintf(*temp, length + 1, "%s", argv[0]);
@@ -151,14 +151,14 @@ void db_edit_contact(ContactText *con) {
         return;
     }
     sqlite3_bind_text(edit_contact,   1, con->name      , -1, SQLITE_STATIC);
-    sqlite3_bind_text(edit_contact,   1, con->title     , -1, SQLITE_STATIC);
-    sqlite3_bind_text(edit_contact,   2, con->phone     , -1, SQLITE_STATIC);
-    sqlite3_bind_text(edit_contact,   3, con->email     , -1, SQLITE_STATIC);
-    sqlite3_bind_text(edit_contact,   4, con->org       , -1, SQLITE_STATIC);
-    sqlite3_bind_text(edit_contact,   5, con->address   , -1, SQLITE_STATIC);
-    sqlite3_bind_text(edit_contact,   6, con->extra     , -1, SQLITE_STATIC);
-    sqlite3_bind_text(edit_contact,   7, con->photoloc  , -1, SQLITE_STATIC);
-    sqlite3_bind_int( edit_contact,   8, atoi(con->id));
+    sqlite3_bind_text(edit_contact,   2, con->title     , -1, SQLITE_STATIC);
+    sqlite3_bind_text(edit_contact,   3, con->phone     , -1, SQLITE_STATIC);
+    sqlite3_bind_text(edit_contact,   4, con->email     , -1, SQLITE_STATIC);
+    sqlite3_bind_text(edit_contact,   5, con->org       , -1, SQLITE_STATIC);
+    sqlite3_bind_text(edit_contact,   6, con->address   , -1, SQLITE_STATIC);
+    sqlite3_bind_text(edit_contact,   7, con->extra     , -1, SQLITE_STATIC);
+    sqlite3_bind_text(edit_contact,   8, con->photoloc  , -1, SQLITE_STATIC);
+    sqlite3_bind_int( edit_contact,   9, atoi(con->id));
 
     if (sqlite3_step(edit_contact) != SQLITE_DONE) {
         printf("Issue with statement: \n%s\n", sqlite3_errmsg(db));
