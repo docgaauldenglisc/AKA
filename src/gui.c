@@ -5,8 +5,7 @@
 #include "database.h"
 
 enum {
-    COL_BOOK = 0,
-    COL_ID, 
+    COL_ID = 0, 
     COL_NAME,
     COL_NUMBER,
     COL_EMAIL,
@@ -97,13 +96,9 @@ static void search_callback(GtkWidget *search_entry, gpointer data) {
 static GtkTreeModel *list_create_model() {
     int max = db_max_id();
 
-    GtkTreeIter parent_iter;
-    GtkTreeIter child_iter;
-    GtkTreeStore *store = gtk_tree_store_new(NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+    GtkTreeIter iter;
+    GtkTreeStore *store = gtk_tree_store_new(NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 
-    char *table_name = db_get_table_name();
-    gtk_tree_store_append(store, &parent_iter, NULL);
-    gtk_tree_store_set(store, &parent_iter, COL_BOOK, table_name, -1);
     for (int i = 1; i < max + 1; i++) {
         ContactText con;
 
@@ -114,8 +109,8 @@ static GtkTreeModel *list_create_model() {
         con.org = db_get("ORG", i);
         con.address = db_get("ADDRESS", i);
 
-        gtk_tree_store_append(store, &child_iter, &parent_iter);
-        gtk_tree_store_set(store, &child_iter, 0, NULL, 1, con.id, 2, con.name, 3, con.number, 4, con.email, 5, con.org, 6, con.address, -1);
+        gtk_tree_store_append(store, &iter, NULL);
+        gtk_tree_store_set(store, &iter, 0, con.id, 1, con.name, 2, con.number, 3, con.email, 4, con.org, 5, con.address, -1);
     }
     GtkTreeModel *model = GTK_TREE_MODEL(store);
 
@@ -127,7 +122,6 @@ static GtkWidget *list_create_view() {
     GtkWidget *view = gtk_tree_view_new();
 
     renderer = gtk_cell_renderer_text_new();
-    gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Book"     , renderer, "text", COL_BOOK, NULL);
     gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "ID"       , renderer, "text", COL_ID, NULL);
     gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Name"     , renderer, "text", COL_NAME, NULL);
     gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Number"   , renderer, "text", COL_NUMBER, NULL);
