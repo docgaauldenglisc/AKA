@@ -107,7 +107,7 @@ static GtkTreeModel *list_create_model() {
 
         //Id is already known, so it doesn't need to be grabbed from the database
         id = malloc(sizeof(char) * 10);
-        snprintf(id, 10, "%i", i);
+        snprintf(id, 11, "%i", i);
         name = db_get("NAME", i);
         title = db_get("TITLE", i);
         phone = db_get("PHONE", i);
@@ -164,6 +164,9 @@ static void gui_edit_contact(GtkWidget *nu, gpointer data) {
 }
 
 static void switch_to_edit_contact_frame(GtkWidget *nu, gpointer nu2) {
+    if (g_contact.id == NULL) {
+        return;
+    }
     remove_child_from(g_view_frame);
 
     ContactText *text = &g_contact;
@@ -475,7 +478,14 @@ static void switch_to_new_contact_frame(GtkWidget *nu, GtkWidget *view_frame) {
 
 static void main_window(GtkApplication *app) {
     GtkWidget *win;
-        GtkWidget *main_frame;
+        GtkWidget *main_box;
+            GtkWidget *menu_bar;
+                GtkWidget *file_menu;
+                    GtkWidget *file_menu_item;
+                    GtkWidget *new_contact_item;
+                GtkWidget *edit_menu;
+                    GtkWidget *edit_menu_item;
+                    GtkWidget *edit_contact_item;
             GtkWidget *main_grid;
                 GtkWidget *new_box;
                     GtkWidget *new_contact_button;
@@ -492,7 +502,14 @@ static void main_window(GtkApplication *app) {
     list = &g_list_view;
 
     win = gtk_application_window_new(app);
-    main_frame = gtk_frame_new("AKA");
+    main_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    menu_bar = gtk_menu_bar_new();
+    file_menu = gtk_menu_new();
+    file_menu_item = gtk_menu_item_new_with_label("File");
+    new_contact_item = gtk_menu_item_new_with_label("New Contact");
+    edit_menu = gtk_menu_new();
+    edit_menu_item = gtk_menu_item_new_with_label("Edit");
+    edit_contact_item = gtk_menu_item_new_with_label("Edit Contact");
     main_grid = gtk_grid_new();
     new_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     new_contact_button = gtk_button_new_with_label("+");
@@ -506,7 +523,18 @@ static void main_window(GtkApplication *app) {
     g_view_frame = gtk_frame_new(NULL);
     view_frame = g_view_frame;
 
-    gtk_frame_set_label_align(GTK_FRAME(main_frame), 0.5, 1.0);
+    gtk_menu_item_set_submenu(GTK_MENU_ITEM(file_menu_item), file_menu);
+    gtk_menu_shell_append(GTK_MENU_SHELL(file_menu), new_contact_item);
+
+    g_signal_connect(new_contact_item, "activate", G_CALLBACK(switch_to_new_contact_frame), view_frame);
+
+    gtk_menu_item_set_submenu(GTK_MENU_ITEM(edit_menu_item), edit_menu);
+    gtk_menu_shell_append(GTK_MENU_SHELL(edit_menu), edit_contact_item);
+
+    g_signal_connect(edit_contact_item, "activate", G_CALLBACK(switch_to_edit_contact_frame), view_frame);
+
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), file_menu_item);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), edit_menu_item);
 
     gtk_widget_set_hexpand(new_box, TRUE);
     gtk_box_pack_start(GTK_BOX(new_box), new_contact_button, FALSE, FALSE, 0);
@@ -546,12 +574,14 @@ static void main_window(GtkApplication *app) {
     gtk_grid_attach(GTK_GRID(main_grid), list_frame,        0, 1, 1, 1);
     gtk_grid_attach(GTK_GRID(main_grid), view_frame,        1, 1, 1, 1);
 
-    gtk_container_add(GTK_CONTAINER(main_frame), main_grid);
+    gtk_container_add(GTK_CONTAINER(main_box), menu_bar);
+
+    gtk_container_add(GTK_CONTAINER(main_box), main_grid);
 
     const int WINDOW_WIDTH = 1280;
     const int WINDOW_HEIGHT = 720;
 
-    gtk_container_add(GTK_CONTAINER(win), main_frame);
+    gtk_container_add(GTK_CONTAINER(win), main_box);
     gtk_window_set_default_size(GTK_WINDOW(win), WINDOW_WIDTH, WINDOW_HEIGHT);
     gtk_widget_show_all(win);
 }
