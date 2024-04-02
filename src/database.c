@@ -9,14 +9,23 @@
 int g_search_count = 0;
 idList g_ids = {.ids = NULL, .id_amount = 0};
 
+void db_save_contact(ContactText *con);
+void db_edit_contact(ContactText *con);
+idList db_search(char *query);
+char *db_get(char *col, int row);
+int db_max_id();
+int db_init();
+
 static int search_callback(void *data, int argc, char **argv, char **nu) {
-    char *temp = (char *)data;
+    char **temp = (char **)data;
+    unsigned long length = strlen(argv[0]);
+    *temp = malloc(sizeof(char) * length);
 
     if (argc > 0 && argv[0] != NULL) {
-        strncpy(temp, argv[0], strlen(argv[0]));
+        snprintf(*temp, length + 1, "%s", argv[0]);
     }
     else {
-        *temp = '\0';
+        *temp = "\0";
     }
     return 0;
 }
@@ -65,11 +74,12 @@ idList db_search(char *query) {
 char *db_get(char *col, int row) {
     sqlite3 *db;
     int str_size;
-    char *err = 0;
     char query[50] = "SELECT %s FROM Contacts WHERE ID = %i";
-    char temp[100] = "";
-    char row_str[50] = "";
+    char *err = 0;
+    char *temp;
+    char *row_str;
 
+    row_str = malloc(sizeof(char) * 10);
     snprintf(row_str, 10, "%i", row);
 
     str_size = strlen(query) + strlen(col) + strlen(row_str);
@@ -81,24 +91,20 @@ char *db_get(char *col, int row) {
 
     sqlite3_exec(db, get_stmt, search_callback, &temp, &err);
 
-    char *ret = malloc(strlen(temp));
-
-    return strcpy(ret, temp); 
+    return temp;
 }
 
 char *db_get_table_name() {
     sqlite3 *db;
     char *err;
     char *query = "SELECT name FROM sqlite_schema WHERE type = 'table' AND name NOT LIKE 'sqlite_%';";
-    char temp[100] = "";
+    char *temp = "";
 
     sqlite3_open("Contacts.db", &db);
 
     sqlite3_exec(db, query, search_callback, &temp, &err);
 
-    char *ret = malloc(strlen(temp));
-
-    return strcpy(ret, temp);
+    return temp;
 }
 
 static int iterator_callback(void *data, int argc, char **argv, char **nu) {
