@@ -9,23 +9,14 @@
 int g_search_count = 0;
 idList g_ids = {.ids = NULL, .id_amount = 0};
 
-void db_save_contact(ContactText *con);
-void db_edit_contact(ContactText *con);
-idList db_search(char *query);
-char *db_get(char *col, int row);
-int db_max_id();
-int db_init();
-
 static int search_callback(void *data, int argc, char **argv, char **nu) {
-    char **temp = (char **)data;
-    unsigned long str_length = strlen(argv[0]);
-    *temp = malloc(sizeof(char) * (str_length + 1));
+    char *temp = (char *)data;
 
     if (argc > 0 && argv[0] != NULL) {
-        snprintf(*temp, str_length + 1, "%s", argv[0]);
+        strncpy(temp, argv[0], strlen(argv[0]));
     }
     else {
-        *temp = "\0";
+        *temp = '\0';
     }
     return 0;
 }
@@ -75,11 +66,10 @@ char *db_get(char *col, int row) {
     sqlite3 *db;
     int str_size;
     char *err = 0;
-    char query[100] = "SELECT %s FROM Contacts WHERE ID = %i";
-    char *temp;
-    char *row_str;
+    char query[50] = "SELECT %s FROM Contacts WHERE ID = %i";
+    char temp[100] = "";
+    char row_str[50] = "";
 
-    row_str = malloc(10);
     snprintf(row_str, 10, "%i", row);
 
     str_size = strlen(query) + strlen(col) + strlen(row_str);
@@ -91,7 +81,9 @@ char *db_get(char *col, int row) {
 
     sqlite3_exec(db, get_stmt, search_callback, &temp, &err);
 
-    return temp; 
+    char *ret = malloc(strlen(temp));
+
+    return strcpy(ret, temp); 
 }
 
 char *db_get_table_name() {
@@ -153,8 +145,7 @@ void db_edit_contact(ContactText *con) {
 
     char *edit_contact_temp = "UPDATE contacts SET " \
                               "NAME = ?, " \
-                              "TITLE = ?, "
-                              "PHONE = ?, " \
+                              "NUMBER = ?, " \
                               "EMAIL = ?, " \
                               "ORG = ?, " \
                               "ADDRESS = ?, " \
@@ -166,14 +157,13 @@ void db_edit_contact(ContactText *con) {
         return;
     }
     sqlite3_bind_text(edit_contact,   1, con->name      , -1, SQLITE_STATIC);
-    sqlite3_bind_text(edit_contact,   2, con->title     , -1, SQLITE_STATIC);
-    sqlite3_bind_text(edit_contact,   3, con->phone     , -1, SQLITE_STATIC);
-    sqlite3_bind_text(edit_contact,   4, con->email     , -1, SQLITE_STATIC);
-    sqlite3_bind_text(edit_contact,   5, con->org       , -1, SQLITE_STATIC);
-    sqlite3_bind_text(edit_contact,   6, con->address   , -1, SQLITE_STATIC);
-    sqlite3_bind_text(edit_contact,   7, con->extra     , -1, SQLITE_STATIC);
-    sqlite3_bind_text(edit_contact,   8, con->photoloc  , -1, SQLITE_STATIC);
-    sqlite3_bind_int( edit_contact,   9, atoi(con->id));
+    sqlite3_bind_text(edit_contact,   2, con->number    , -1, SQLITE_STATIC);
+    sqlite3_bind_text(edit_contact,   3, con->email     , -1, SQLITE_STATIC);
+    sqlite3_bind_text(edit_contact,   4, con->org       , -1, SQLITE_STATIC);
+    sqlite3_bind_text(edit_contact,   5, con->address   , -1, SQLITE_STATIC);
+    sqlite3_bind_text(edit_contact,   6, con->extra     , -1, SQLITE_STATIC);
+    sqlite3_bind_text(edit_contact,   7, con->photoloc  , -1, SQLITE_STATIC);
+    sqlite3_bind_int( edit_contact,   8, atoi(con->id));
 
     puts(sqlite3_expanded_sql(edit_contact));
     if (sqlite3_step(edit_contact) != SQLITE_DONE) {
@@ -197,8 +187,7 @@ void db_save_contact(ContactText *con) {
     char *new_contact_temp = "INSERT INTO Contacts(" \
                              "ID," \
                              "NAME," \
-                             "TITLE," \
-                             "PHONE," \
+                             "NUMBER," \
                              "EMAIL," \
                              "ORG," \
                              "ADDRESS," \
@@ -212,21 +201,19 @@ void db_save_contact(ContactText *con) {
                              "?," \
                              "?," \
                              "?," \
-                             "?," \
                              "?);";
     if (sqlite3_prepare_v2(db, new_contact_temp, -1, &make_new_contact, NULL) != SQLITE_OK) {
         fprintf(stderr, "Issue with statement: %s\n", sqlite3_errmsg(db));
         return;
     }
     sqlite3_bind_int( make_new_contact,   1, db_max_id() + 1);
-    sqlite3_bind_text(make_new_contact,   2, con->name      , -1, SQLITE_STATIC);
-    sqlite3_bind_text(make_new_contact,   3, con->title     , -1, SQLITE_STATIC);
-    sqlite3_bind_text(make_new_contact,   4, con->phone     , -1, SQLITE_STATIC);
-    sqlite3_bind_text(make_new_contact,   5, con->email     , -1, SQLITE_STATIC);
-    sqlite3_bind_text(make_new_contact,   6, con->org       , -1, SQLITE_STATIC);
-    sqlite3_bind_text(make_new_contact,   7, con->address   , -1, SQLITE_STATIC);
-    sqlite3_bind_text(make_new_contact,   8, con->extra     , -1, SQLITE_STATIC);
-    sqlite3_bind_text(make_new_contact,   9, con->photoloc  , -1, SQLITE_STATIC);
+    sqlite3_bind_text(make_new_contact,   2, con->name       , -1, SQLITE_STATIC);
+    sqlite3_bind_text(make_new_contact,   3, con->number     , -1, SQLITE_STATIC);
+    sqlite3_bind_text(make_new_contact,   4, con->email      , -1, SQLITE_STATIC);
+    sqlite3_bind_text(make_new_contact,   5, con->org        , -1, SQLITE_STATIC);
+    sqlite3_bind_text(make_new_contact,   6, con->address    , -1, SQLITE_STATIC);
+    sqlite3_bind_text(make_new_contact,   7, con->extra      , -1, SQLITE_STATIC);
+    sqlite3_bind_text(make_new_contact,   8, con->photoloc   , -1, SQLITE_STATIC);
 
     if (sqlite3_step(make_new_contact) != SQLITE_DONE) {
         fprintf(stderr, "Issue with statement: %s\n", sqlite3_errmsg(db));
@@ -249,8 +236,7 @@ int db_init() {
     const char *database_schema = "CREATE TABLE IF NOT EXISTS contacts (" \
                                   "ID INT PRIMARY KEY NOT NULL, " \ 
                                   "NAME TEXT NOT NULL, " \
-                                  "TITLE TEXT, " \
-                                  "PHONE TEXT, " \
+                                  "NUMBER TEXT, " \
                                   "EMAIL TEXT, " \ 
                                   "ORG TEXT, " \
                                   "ADDRESS TEXT, " \
