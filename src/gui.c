@@ -17,8 +17,11 @@ enum {
 
 ListView g_list_view;
 GtkWidget *g_view_frame;
+GtkWidget *g_win;
 ContactText g_contact;
 
+static void gui_send_error(char *err);
+static void gui_delete_contact(GtkWidget *nu, gpointer data);
 static void remove_child_from(GtkWidget *container);
 static void search_callback(GtkWidget *search_entry, gpointer data);
 static GtkTreeModel *list_create_model();
@@ -32,6 +35,19 @@ static void on_file_select(GtkFileChooserButton *button, gpointer data);
 static void switch_to_new_contact_frame(GtkWidget *nu, GtkWidget *view_frame);
 static void main_window(GtkApplication *app);
 int gui_init(int argc, char **argv);
+
+static void gui_send_error(char *err) {
+    GtkDialogFlags flags = GTK_DIALOG_DESTROY_WITH_PARENT;
+    GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(g_win), flags, GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, err);
+    gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+}
+
+static void gui_delete_contact(GtkWidget *nu, gpointer nu2) {
+    puts("yes its running");
+    db_delete_contact(atoi(g_contact.id)); 
+    list_refresh();
+}
 
 static void remove_child_from(GtkWidget *container) {
     GtkWidget *child = gtk_bin_get_child(GTK_BIN(container));
@@ -105,19 +121,24 @@ static GtkTreeModel *list_create_model() {
         char *org;
         char *address;
 
-        //Id is already known, so it doesn't need to be grabbed from the database
-        id = malloc(sizeof(char) * 10);
-        snprintf(id, 11, "%i", i);
-        name = db_get("NAME", i);
-        title = db_get("TITLE", i);
-        phone = db_get("PHONE", i);
-        email = db_get("EMAIL", i);
-        org = db_get("ORG", i);
-        address = db_get("ADDRESS", i);
+        if (strcmp(db_get("NAME", i), "del") == 0) {
+            puts("No name, skipping");
+        }
+        else {
+            //Id is already known, so it doesn't need to be grabbed from the database
+            id = malloc(sizeof(char) * 10);
+            snprintf(id, 11, "%i", i);
+            name = db_get("NAME", i);
+            title = db_get("TITLE", i);
+            phone = db_get("PHONE", i);
+            email = db_get("EMAIL", i);
+            org = db_get("ORG", i);
+            address = db_get("ADDRESS", i);
 
-        gtk_tree_store_append(store, &iter, NULL);
-        gtk_tree_store_set(store, &iter, COL_ID, id, COL_NAME, name, COL_TITLE, title, COL_PHONE, phone, COL_EMAIL, email, COL_ORG, org, 
-                           COL_ADDRESS, address, -1);
+            gtk_tree_store_append(store, &iter, NULL);
+            gtk_tree_store_set(store, &iter, COL_ID, id, COL_NAME, name, COL_TITLE, title, COL_PHONE, phone, COL_EMAIL, email, COL_ORG, org, 
+                    COL_ADDRESS, address, -1);
+        }
     }
     GtkTreeModel *model = GTK_TREE_MODEL(store);
 
@@ -278,6 +299,7 @@ static void switch_to_view_contact_frame(GtkTreeSelection *selection, GtkWidget 
     GtkWidget *extra_label;
     GtkWidget *photo;
     GtkWidget *edit_button;
+    GtkWidget *delete_button;
 
     if (gtk_tree_selection_get_selected(selection, &model, &iter)) {
         gtk_tree_model_get(model, &iter, COL_ID     , &g_contact.id         , -1);
@@ -340,8 +362,10 @@ static void switch_to_view_contact_frame(GtkTreeSelection *selection, GtkWidget 
         c_labels.extra = gtk_label_new(g_contact.extra);
         gtk_widget_set_hexpand(c_labels.extra, TRUE);
         edit_button = gtk_button_new_with_label("Edit");
+        delete_button = gtk_button_new_with_label("Delete");
 
-        g_signal_connect(edit_button, "clicked", G_CALLBACK(switch_to_edit_contact_frame), g_contact.id);
+        g_signal_connect(edit_button, "clicked", G_CALLBACK(switch_to_edit_contact_frame), NULL);
+        g_signal_connect(delete_button, "clicked", G_CALLBACK(gui_delete_contact), NULL);
         gtk_widget_set_hexpand(edit_button, TRUE);
 //                                                                x, y, w, h
         gtk_grid_attach(GTK_GRID(grid), name_label              , 1, 1, 1, 1);
@@ -358,7 +382,8 @@ static void switch_to_view_contact_frame(GtkTreeSelection *selection, GtkWidget 
         gtk_grid_attach(GTK_GRID(grid), c_labels.org            , 2, 5, 1, 1);
         gtk_grid_attach(GTK_GRID(grid), c_labels.address        , 2, 6, 1, 1);
         gtk_grid_attach(GTK_GRID(grid), c_labels.extra          , 2, 7, 1, 1);
-        gtk_grid_attach(GTK_GRID(grid), edit_button             , 1, 8, 2, 1);
+        gtk_grid_attach(GTK_GRID(grid), edit_button             , 1, 8, 1, 1);
+        gtk_grid_attach(GTK_GRID(grid), delete_button           , 2, 8, 1, 1);
 
         gtk_container_add(GTK_CONTAINER(view_frame), grid);
         gtk_widget_show_all(view_frame);
@@ -375,7 +400,14 @@ static void gui_save_contact(GtkWidget *nu, gpointer data) {
     con->con->address   = (char *)gtk_entry_get_text(GTK_ENTRY(con->enter->address));
     con->con->extra     = (char *)gtk_entry_get_text(GTK_ENTRY(con->enter->extra));
 
-    db_save_contact(con->con);
+    switch (db_save_contact(con->con)) {
+        case 0:
+            //Do nothing
+            break;
+        case 1:
+            gui_send_error("Phone number not valid");
+            break;
+    }
     list_refresh();
 }
 
@@ -501,7 +533,8 @@ static void main_window(GtkApplication *app) {
 
     list = &g_list_view;
 
-    win = gtk_application_window_new(app);
+    g_win = gtk_application_window_new(app);
+    win = g_win;
     main_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     menu_bar = gtk_menu_bar_new();
     file_menu = gtk_menu_new();
@@ -515,7 +548,7 @@ static void main_window(GtkApplication *app) {
     new_contact_button = gtk_button_new_with_label("+");
     refresh_button = gtk_button_new();
     refresh_icon = gtk_image_new_from_icon_name("view-refresh-symbolic", GTK_ICON_SIZE_BUTTON);
-    list_frame = gtk_frame_new(NULL);
+    list_frame = gtk_frame_new("List");
     list_grid = gtk_grid_new();
     search_entry = gtk_search_entry_new();
     scrolled_list_frame = gtk_scrolled_window_new(NULL, NULL);

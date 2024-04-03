@@ -6,7 +6,8 @@ typedef struct {
     int id_amount;
 } idList;
 
-void db_save_contact(ContactText *con);
+void db_delete_contact(int id);
+int db_save_contact(ContactText *con);
 void db_edit_contact(ContactText *con);
 idList db_search(char *query);
 char *db_get(char *col, int row);
