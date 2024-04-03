@@ -19,6 +19,7 @@ ListView g_list_view;
 GtkWidget *g_view_frame;
 ContactText g_contact;
 
+static void change_view_frame_size(GtkWidget *win, gpointer nu);
 static void remove_child_from(GtkWidget *container);
 static void search_callback(GtkWidget *search_entry, gpointer data);
 static GtkTreeModel *list_create_model();
@@ -32,6 +33,16 @@ static void on_file_select(GtkFileChooserButton *button, gpointer data);
 static void switch_to_new_contact_frame(GtkWidget *nu, GtkWidget *view_frame);
 static void main_window(GtkApplication *app);
 int gui_init(int argc, char **argv);
+
+static void change_view_frame_size(GtkWidget *win, gpointer nu) {
+    GtkAllocation allocation;
+
+    gtk_widget_get_allocation(win, &allocation);
+    //Make the view frame 45 percent of the width of the window
+    int min_width = (int)(0.45 * allocation.width);
+
+    gtk_widget_set_size_request((g_view_frame), min_width, -1);
+}
 
 static void remove_child_from(GtkWidget *container) {
     GtkWidget *child = gtk_bin_get_child(GTK_BIN(container));
@@ -562,6 +573,7 @@ static void main_window(GtkApplication *app) {
     gtk_widget_set_hexpand(view_frame, TRUE);
     gtk_widget_set_vexpand(view_frame, TRUE);
     gtk_frame_set_label_align(GTK_FRAME(view_frame), 0.5, 1.0);
+    g_signal_connect(win, "size-allocate", G_CALLBACK(change_view_frame_size), view_frame);
 
     //gtk_container_add(GTK_CONTAINER(list_frame), list->view);
     gtk_grid_attach(GTK_GRID(list_grid), search_entry,      0, 0, 1, 1);
