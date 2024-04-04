@@ -546,6 +546,8 @@ static void switch_to_new_contact_frame(GtkWidget *nu, GtkWidget *view_frame) {
 }
 
 static void main_window(GtkApplication *app) {
+    //Prevents a segfault if the user presses "Delete Contact" in the edit menu
+    //before selecting one.
     g_contact.id = "0";
 
     GtkWidget *win;
