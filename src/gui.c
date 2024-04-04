@@ -52,6 +52,9 @@ static void gui_send_error(char *err) {
 }
 
 static void gui_delete_contact(GtkWidget *nu, gpointer nu2) {
+    if (atoi(g_contact.id) == 0) {
+        return;
+    }
     db_delete_contact(atoi(g_contact.id)); 
     list_refresh();
 }
@@ -188,7 +191,6 @@ static void gui_edit_contact(GtkWidget *nu, gpointer data) {
 
     switch (db_edit_contact(con->con)) {
         case CONTACT_GOOD:
-            //If the contact to be edited is valid
             list_refresh();
             gtk_frame_set_label(GTK_FRAME(g_view_frame), "View");
             break;
@@ -428,7 +430,6 @@ static void gui_save_contact(GtkWidget *nu, gpointer data) {
 
     switch (db_save_contact(con->con)) {
         case CONTACT_GOOD:
-            //If the contact to be saved is valid
             list_refresh();
             gtk_frame_set_label(GTK_FRAME(g_view_frame), "View");
             break;
@@ -545,6 +546,8 @@ static void switch_to_new_contact_frame(GtkWidget *nu, GtkWidget *view_frame) {
 }
 
 static void main_window(GtkApplication *app) {
+    g_contact.id = "0";
+
     GtkWidget *win;
         GtkWidget *main_box;
             GtkWidget *menu_bar;
@@ -554,6 +557,7 @@ static void main_window(GtkApplication *app) {
                 GtkWidget *edit_menu;
                     GtkWidget *edit_menu_item;
                     GtkWidget *edit_contact_item;
+                    GtkWidget *delete_contact_item;
             GtkWidget *main_grid;
                 GtkWidget *new_box;
                     GtkWidget *new_contact_button;
@@ -579,6 +583,7 @@ static void main_window(GtkApplication *app) {
     edit_menu = gtk_menu_new();
     edit_menu_item = gtk_menu_item_new_with_label("Edit");
     edit_contact_item = gtk_menu_item_new_with_label("Edit Contact");
+    delete_contact_item = gtk_menu_item_new_with_label("Delete Contact");
     main_grid = gtk_grid_new();
     new_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     new_contact_button = gtk_button_new_with_label("+");
@@ -599,8 +604,10 @@ static void main_window(GtkApplication *app) {
 
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(edit_menu_item), edit_menu);
     gtk_menu_shell_append(GTK_MENU_SHELL(edit_menu), edit_contact_item);
+    gtk_menu_shell_append(GTK_MENU_SHELL(edit_menu), delete_contact_item);
 
     g_signal_connect(edit_contact_item, "activate", G_CALLBACK(switch_to_edit_contact_frame), view_frame);
+    g_signal_connect(delete_contact_item, "activate", G_CALLBACK(gui_delete_contact), NULL);
 
     gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), file_menu_item);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), edit_menu_item);
