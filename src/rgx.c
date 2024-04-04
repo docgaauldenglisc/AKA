@@ -31,3 +31,49 @@ int rgx_check_phone(char *phone) {
 
     pcre_free(re);
 }
+
+int rgx_check_email(char *email) {
+    if (email[0] == '\0') {
+        return 0;
+    }
+    const char *pattern = "((^(\\w)+)(@(\\w)+)(\\.[a-zA-Z]+$|\\.[a-zA-Z]+\\.\\w{2}$))";
+    const char *error;
+    int rc;
+    pcre *re;
+    int error_offset;
+    
+    re = pcre_compile(pattern, 0, &error, &error_offset, NULL);
+
+    rc = pcre_exec(re, NULL, email, strlen(email), 0, 0, NULL, 0);
+    if (rc >= 0) {
+        return 0;
+    }
+    else {
+        return 1;
+    }
+
+    pcre_free(re);
+}
+
+int rgx_check_address(char *address) {
+    if (address[0] == '\0') {
+        return 0;
+    }
+    const char *pattern = "\\d+ ([\\w| ]+|[\\w| ]+,[\\w| ]+), [a-zA-Z]{2,}, [0-9]{5,}";
+    const char *error;
+    int rc;
+    pcre *re;
+    int error_offset;
+    
+    re = pcre_compile(pattern, 0, &error, &error_offset, NULL);
+
+    rc = pcre_exec(re, NULL, address, strlen(address), 0, 0, NULL, 0);
+    if (rc >= 0) {
+        return 0;
+    }
+    else {
+        return 1;
+    }
+
+    pcre_free(re);
+}

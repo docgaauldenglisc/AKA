@@ -44,7 +44,6 @@ static void gui_send_error(char *err) {
 }
 
 static void gui_delete_contact(GtkWidget *nu, gpointer nu2) {
-    puts("yes its running");
     db_delete_contact(atoi(g_contact.id)); 
     list_refresh();
 }
@@ -122,7 +121,6 @@ static GtkTreeModel *list_create_model() {
         char *address;
 
         if (strcmp(db_get("NAME", i), "del") == 0) {
-            puts("No name, skipping");
         }
         else {
             //Id is already known, so it doesn't need to be grabbed from the database
@@ -406,6 +404,12 @@ static void gui_save_contact(GtkWidget *nu, gpointer data) {
             break;
         case 1:
             gui_send_error("Phone number not valid");
+            break;
+        case 2:
+            gui_send_error("Email Address not valid");
+            break;
+        case 3:
+            gui_send_error("Address not valid");
             break;
     }
     list_refresh();
