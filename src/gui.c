@@ -276,7 +276,10 @@ static void switch_to_edit_contact_frame(GtkWidget *nu, gpointer nu2) {
 
     gtk_grid_attach(GTK_GRID(edit_contact_grid), save_button,        2, 9, 1, 1);
 
-    gtk_frame_set_label(GTK_FRAME(g_view_frame), "Edit Contact");
+    char *frame_str = malloc(sizeof(char) * 10);
+    snprintf(frame_str, 10, "Edit %s", text->name);
+
+    gtk_frame_set_label(GTK_FRAME(g_view_frame), frame_str);
     gtk_container_add(GTK_CONTAINER(g_view_frame), edit_contact_grid);
     gtk_widget_show_all(g_view_frame);
 }
@@ -388,6 +391,14 @@ static void switch_to_view_contact_frame(GtkTreeSelection *selection, GtkWidget 
     }
 }
 
+enum {
+    CONTACT_GOOD = 0,
+    CONTACT_PHONE_BAD,
+    CONTACT_EMAIL_BAD,
+    CONTACT_ADDRESS_BAD,
+    CONTACT_NAME_BAD
+};
+
 static void gui_save_contact(GtkWidget *nu, gpointer data) {
     Contact *con = (Contact *)data;
     con->con->name      = (char *)gtk_entry_get_text(GTK_ENTRY(con->enter->name));
@@ -399,23 +410,24 @@ static void gui_save_contact(GtkWidget *nu, gpointer data) {
     con->con->extra     = (char *)gtk_entry_get_text(GTK_ENTRY(con->enter->extra));
 
     switch (db_save_contact(con->con)) {
-        case 0:
-            //Do nothing
+        case CONTACT_GOOD:
+            //If the contact to be saved is valid
+            list_refresh();
+            gtk_frame_set_label(GTK_FRAME(g_view_frame), "View");
             break;
-        case 1:
+        case CONTACT_PHONE_BAD:
             gui_send_error("Phone number not valid");
             break;
-        case 2:
+        case CONTACT_EMAIL_BAD:
             gui_send_error("Email Address not valid");
             break;
-        case 3:
+        case CONTACT_ADDRESS_BAD:
             gui_send_error("Address not valid");
             break;
-        case 4:
+        case CONTACT_NAME_BAD:
             gui_send_error("Name not valid");
             break;
     }
-    list_refresh();
 }
 
 static void on_file_select(GtkFileChooserButton *button, gpointer data) {
@@ -560,7 +572,7 @@ static void main_window(GtkApplication *app) {
     search_entry = gtk_search_entry_new();
     scrolled_list_frame = gtk_scrolled_window_new(NULL, NULL);
     list->view = list_create_view();
-    g_view_frame = gtk_frame_new(NULL);
+    g_view_frame = gtk_frame_new("View");
     view_frame = g_view_frame;
 
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(file_menu_item), file_menu);
