@@ -5,6 +5,14 @@
 #include "database.h"
 
 enum {
+    CONTACT_GOOD = 0,
+    CONTACT_PHONE_BAD,
+    CONTACT_EMAIL_BAD,
+    CONTACT_ADDRESS_BAD,
+    CONTACT_NAME_BAD
+};
+
+enum {
     COL_ID = 0, 
     COL_NAME,
     COL_TITLE,
@@ -178,8 +186,25 @@ static void gui_edit_contact(GtkWidget *nu, gpointer data) {
     con->con->address   = (char *)gtk_entry_get_text(GTK_ENTRY(con->enter->address));
     con->con->extra     = (char *)gtk_entry_get_text(GTK_ENTRY(con->enter->extra));
 
-    db_edit_contact(con->con);
-    list_refresh();
+    switch (db_edit_contact(con->con)) {
+        case CONTACT_GOOD:
+            //If the contact to be edited is valid
+            list_refresh();
+            gtk_frame_set_label(GTK_FRAME(g_view_frame), "View");
+            break;
+        case CONTACT_PHONE_BAD:
+            gui_send_error("Phone number not valid");
+            break;
+        case CONTACT_EMAIL_BAD:
+            gui_send_error("Email Address not valid");
+            break;
+        case CONTACT_ADDRESS_BAD:
+            gui_send_error("Address not valid");
+            break;
+        case CONTACT_NAME_BAD:
+            gui_send_error("Name not valid");
+            break;
+    }
 }
 
 static void switch_to_edit_contact_frame(GtkWidget *nu, gpointer nu2) {
@@ -390,14 +415,6 @@ static void switch_to_view_contact_frame(GtkTreeSelection *selection, GtkWidget 
         gtk_widget_show_all(view_frame);
     }
 }
-
-enum {
-    CONTACT_GOOD = 0,
-    CONTACT_PHONE_BAD,
-    CONTACT_EMAIL_BAD,
-    CONTACT_ADDRESS_BAD,
-    CONTACT_NAME_BAD
-};
 
 static void gui_save_contact(GtkWidget *nu, gpointer data) {
     Contact *con = (Contact *)data;

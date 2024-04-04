@@ -8,7 +8,7 @@ typedef struct {
 
 void db_delete_contact(int id);
 int db_save_contact(ContactText *con);
-void db_edit_contact(ContactText *con);
+int db_edit_contact(ContactText *con);
 idList db_search(char *query);
 char *db_get(char *col, int row);
 int db_max_id();

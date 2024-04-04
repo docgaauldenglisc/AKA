@@ -14,7 +14,7 @@ idList g_ids = {.ids = NULL, .id_amount = 0};
 static void edit_contact_for_delete(ContactText *con);
 void db_delete_contact(int id);
 int db_save_contact(ContactText *con);
-void db_edit_contact(ContactText *con);
+int db_edit_contact(ContactText *con);
 idList db_search(char *query);
 char *db_get(char *col, int row);
 int db_max_id();
@@ -176,15 +176,27 @@ int db_max_id() {
     return max_id;
 }
 
-void db_edit_contact(ContactText *con) {
+int db_edit_contact(ContactText *con) {
     sqlite3 *db;
     sqlite3_stmt *edit_contact;
     int rc;
 
+    if (rgx_check_phone(con->phone) == 1) {
+        return 1;
+    }
+    if (rgx_check_email(con->email) == 1) {
+        return 2;
+    }
+    if (rgx_check_address(con->address) == 1) {
+        return 3;
+    }
+    if (rgx_check_name(con->name) == 1) {
+        return 4;
+    }
     rc = sqlite3_open("Contacts.db", &db);
     if (rc) {
         printf("Database couldn't open!\n%s\n", sqlite3_errmsg(db));
-        return;
+        return -1;
     }
 
     char *edit_contact_temp = "UPDATE contacts SET " \
@@ -200,7 +212,7 @@ void db_edit_contact(ContactText *con) {
                               "WHERE ID = ?;";
     if (sqlite3_prepare_v2(db, edit_contact_temp, -1, &edit_contact, NULL) != SQLITE_OK) {
         printf("Issue with statement: \n%s\n", sqlite3_errmsg(db));
-        return;
+        return -1;
     }
     sqlite3_bind_int( edit_contact,   1, atoi(con->id));
     sqlite3_bind_text(edit_contact,   2, con->name      , -1, SQLITE_STATIC);
@@ -220,6 +232,8 @@ void db_edit_contact(ContactText *con) {
     sqlite3_finalize(edit_contact);
 
     sqlite3_close(db);
+
+    return 0;
 }
 
 int db_save_contact(ContactText *con) {
