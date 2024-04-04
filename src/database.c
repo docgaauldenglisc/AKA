@@ -112,6 +112,8 @@ idList db_search(char *query) {
     g_ids.ids = (int *)malloc(g_ids.id_amount* sizeof(int));
     sqlite3_exec(db, stmt_char, search_set_ids, 0, &err);
 
+    sqlite3_close(db);
+
     return g_ids;
 }
 
@@ -134,6 +136,8 @@ char *db_get(char *col, int row) {
     snprintf(get_stmt, str_size, query, col, row); 
 
     sqlite3_exec(db, get_stmt, search_callback, &temp, &err);
+
+    sqlite3_close(db);
 
     return temp;
 }
@@ -166,6 +170,9 @@ int db_max_id() {
     char *get_max_id = "SELECT MAX(ID) FROM Contacts";
 
     sqlite3_exec(db, get_max_id, iterator_callback, &max_id, &err);
+
+    sqlite3_close(db);
+
     return max_id;
 }
 
@@ -211,6 +218,8 @@ void db_edit_contact(ContactText *con) {
     }
 
     sqlite3_finalize(edit_contact);
+
+    sqlite3_close(db);
 }
 
 int db_save_contact(ContactText *con) {
@@ -226,6 +235,9 @@ int db_save_contact(ContactText *con) {
     }
     if (rgx_check_address(con->address) == 1) {
         return 3;
+    }
+    if (rgx_check_name(con->name) == 1) {
+        return 4;
     }
 
     rc = sqlite3_open("Contacts.db", &db);
@@ -273,6 +285,8 @@ int db_save_contact(ContactText *con) {
     }
 
     sqlite3_finalize(make_new_contact);
+
+    sqlite3_close(db);
 
     return 0;
 }

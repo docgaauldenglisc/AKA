@@ -411,6 +411,9 @@ static void gui_save_contact(GtkWidget *nu, gpointer data) {
         case 3:
             gui_send_error("Address not valid");
             break;
+        case 4:
+            gui_send_error("Name not valid");
+            break;
     }
     list_refresh();
 }

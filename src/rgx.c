@@ -4,10 +4,19 @@
 
 #include "rgx.h"
 
-int rgx_test();
 int rgx_check_phone(char *phone);
 int rgx_check_email(char *email);
 int rgx_check_address(char *address);
+
+/*
+ * Doesn't even use regex, just returns 1 if the name string is empty.
+ */
+int rgx_check_name(char *name) {
+    if (name[0] == '\0') {
+        return 1;
+    }
+    return 0;
+}
 
 int rgx_check_phone(char *phone) {
     if (phone[0] == '\0') {
