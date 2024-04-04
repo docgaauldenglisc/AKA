@@ -4,6 +4,9 @@
 #include "gui.h"
 #include "database.h"
 
+const int WINDOW_WIDTH = 1280;
+const int WINDOW_HEIGHT = 720;
+
 enum {
     CONTACT_GOOD = 0,
     CONTACT_PHONE_BAD,
@@ -28,6 +31,7 @@ GtkWidget *g_view_frame;
 GtkWidget *g_win;
 ContactText g_contact;
 
+static void gui_open_adding_contacts_guide();
 static void gui_send_error(char *err);
 static void gui_delete_contact(GtkWidget *nu, gpointer data);
 static void remove_child_from(GtkWidget *container);
@@ -43,6 +47,38 @@ static void on_file_select(GtkFileChooserButton *button, gpointer data);
 static void switch_to_new_contact_frame(GtkWidget *nu, GtkWidget *view_frame);
 static void main_window(GtkApplication *app);
 int gui_init(int argc, char **argv);
+
+static void gui_open_adding_contacts_guide() {
+    GtkWidget *win;
+        GtkWidget *help_box;
+            GtkWidget *scrolled_text_container;
+                GtkWidget *text_view;
+                    GtkTextBuffer *text_buf;
+                    GtkTextIter iter;
+
+    char *guide = "<span foreground='red' weight='bold'>Bold Red Text</span>";
+
+    win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    help_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    scrolled_text_container = gtk_scrolled_window_new(NULL, NULL);
+    text_view = gtk_text_view_new();
+
+    text_buf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
+    gtk_text_buffer_insert_markup(text_buf, &iter, guide, strlen(guide)); 
+
+    gtk_text_buffer_get_end_iter(text_buf, &iter);
+
+    gtk_widget_set_hexpand(text_view, TRUE);
+    gtk_text_view_set_editable(GTK_TEXT_VIEW(text_view), FALSE);
+    gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(text_view), FALSE);
+
+    gtk_container_add(GTK_CONTAINER(scrolled_text_container), text_view);
+    gtk_container_add(GTK_CONTAINER(help_box), scrolled_text_container);
+
+    gtk_container_add(GTK_CONTAINER(win), help_box);
+    gtk_window_set_default_size(GTK_WINDOW(win), WINDOW_WIDTH, WINDOW_HEIGHT);
+    gtk_widget_show_all(win);
+}
 
 static void gui_send_error(char *err) {
     GtkDialogFlags flags = GTK_DIALOG_DESTROY_WITH_PARENT;
@@ -560,6 +596,9 @@ static void main_window(GtkApplication *app) {
                     GtkWidget *edit_menu_item;
                     GtkWidget *edit_contact_item;
                     GtkWidget *delete_contact_item;
+                GtkWidget *help_menu;
+                    GtkWidget *help_menu_item;
+                    GtkWidget *adding_contacts_item;
             GtkWidget *main_grid;
                 GtkWidget *new_box;
                     GtkWidget *new_contact_button;
@@ -586,6 +625,9 @@ static void main_window(GtkApplication *app) {
     edit_menu_item = gtk_menu_item_new_with_label("Edit");
     edit_contact_item = gtk_menu_item_new_with_label("Edit Contact");
     delete_contact_item = gtk_menu_item_new_with_label("Delete Contact");
+    help_menu = gtk_menu_new();
+    help_menu_item = gtk_menu_item_new_with_label("Help");
+    adding_contacts_item = gtk_menu_item_new_with_label("Adding Contacts");
     main_grid = gtk_grid_new();
     new_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     new_contact_button = gtk_button_new_with_label("+");
@@ -611,8 +653,14 @@ static void main_window(GtkApplication *app) {
     g_signal_connect(edit_contact_item, "activate", G_CALLBACK(switch_to_edit_contact_frame), view_frame);
     g_signal_connect(delete_contact_item, "activate", G_CALLBACK(gui_delete_contact), NULL);
 
+    gtk_menu_item_set_submenu(GTK_MENU_ITEM(help_menu_item), help_menu);
+    gtk_menu_shell_append(GTK_MENU_SHELL(help_menu), adding_contacts_item);
+
+    g_signal_connect(adding_contacts_item, "activate", G_CALLBACK(gui_open_adding_contacts_guide), NULL);
+
     gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), file_menu_item);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), edit_menu_item);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), help_menu_item);
 
     gtk_widget_set_hexpand(new_box, TRUE);
     gtk_box_pack_start(GTK_BOX(new_box), new_contact_button, FALSE, FALSE, 0);
@@ -655,9 +703,6 @@ static void main_window(GtkApplication *app) {
     gtk_container_add(GTK_CONTAINER(main_box), menu_bar);
 
     gtk_container_add(GTK_CONTAINER(main_box), main_grid);
-
-    const int WINDOW_WIDTH = 1280;
-    const int WINDOW_HEIGHT = 720;
 
     gtk_container_add(GTK_CONTAINER(win), main_box);
     gtk_window_set_default_size(GTK_WINDOW(win), WINDOW_WIDTH, WINDOW_HEIGHT);
