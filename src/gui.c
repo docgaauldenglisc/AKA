@@ -56,7 +56,16 @@ static void gui_open_adding_contacts_guide() {
                     GtkTextBuffer *text_buf;
                     GtkTextIter iter;
 
-    char *guide = "<span foreground='red' weight='bold'>Bold Red Text</span>";
+    char *guide = NULL;
+    FILE *file;
+    size_t len = 0;
+    ssize_t read = 0;
+    file = fopen("../src/help/faq/creatingacontact", "r");
+    if (file == NULL) {
+        puts("Can't open file!");
+        return;
+    }
+    read = getdelim(&guide, &len, '\0', file);
 
     win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     help_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -64,9 +73,10 @@ static void gui_open_adding_contacts_guide() {
     text_view = gtk_text_view_new();
 
     text_buf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
-    gtk_text_buffer_insert_markup(text_buf, &iter, guide, strlen(guide)); 
 
     gtk_text_buffer_get_end_iter(text_buf, &iter);
+
+    gtk_text_buffer_insert_markup(text_buf, &iter, guide, strlen(guide)); 
 
     gtk_widget_set_hexpand(text_view, TRUE);
     gtk_text_view_set_editable(GTK_TEXT_VIEW(text_view), FALSE);
