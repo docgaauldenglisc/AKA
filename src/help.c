@@ -28,12 +28,10 @@ enum {
     NAMEEXPLAINED,
     TITLEEXPLAINED,
     PHONENUMBEREXPLAINED,
+    EMAILEXPLAINED,
+    ORGEXPLAINED,
+    ADDRESSEXPLAINED,
 };
-
-static void add_section_to(GtkTreeStore *store, GtkTreeIter *iter, char *name) {
-    gtk_tree_store_append(store, iter, NULL);
-    gtk_tree_store_set(store, iter, COL_SECTION, name, COL_GUIDE, "", COL_FILENAME, FAQ, -1);
-}
 
 static GtkTreeModel *list_create_model() {
     GtkTreeIter parent_iter;
@@ -63,6 +61,15 @@ static GtkTreeModel *list_create_model() {
 
     gtk_tree_store_append(store, &child_iter, &parent_iter);
     gtk_tree_store_set(store, &child_iter, COL_SECTION, "", COL_GUIDE, "Phone Number", COL_FILENAME, PHONENUMBEREXPLAINED, -1);
+
+    gtk_tree_store_append(store, &child_iter, &parent_iter);
+    gtk_tree_store_set(store, &child_iter, COL_SECTION, "", COL_GUIDE, "Email", COL_FILENAME, EMAILEXPLAINED, -1);
+
+    gtk_tree_store_append(store, &child_iter, &parent_iter);
+    gtk_tree_store_set(store, &child_iter, COL_SECTION, "", COL_GUIDE, "Organization", COL_FILENAME, ORGEXPLAINED, -1);
+
+    gtk_tree_store_append(store, &child_iter, &parent_iter);
+    gtk_tree_store_set(store, &child_iter, COL_SECTION, "", COL_GUIDE, "Address", COL_FILENAME, ADDRESSEXPLAINED, -1);
 
     GtkTreeModel *model = GTK_TREE_MODEL(store);
     return model;
@@ -145,6 +152,15 @@ static void change_guide_to_selection(GtkWidget *selection, gpointer nu) {
             break;
         case PHONENUMBEREXPLAINED:
             open_guide("../src/help/phonenumberexplained");
+            break;
+        case EMAILEXPLAINED:
+            open_guide("../src/help/emailexplained");
+            break;
+        case ORGEXPLAINED:
+            open_guide("../src/help/orgexplained");
+            break;
+        case ADDRESSEXPLAINED:
+            open_guide("../src/help/addressexplained");
             break;
         }
     }
