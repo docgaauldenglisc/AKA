@@ -1,4 +1,4 @@
-<span foreground='Black' weight='bold' size='xx-large'>Phone Number</span>
+<span weight='bold' size='xx-large'>Phone Number</span>
 
 The <b>Phone Number</b> of a <b>Contact</b> can be left blank, but when it is entered,
 the input must look like it is a phone number.

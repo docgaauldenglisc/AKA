@@ -24,6 +24,7 @@ enum {
     CREATINGACONTACT,
     DELETINGACONTACT,
     EDITINGACONTACT,
+    CONTACTINFORMATION,
     NAMEEXPLAINED,
     TITLEEXPLAINED,
     PHONENUMBEREXPLAINED,
@@ -39,7 +40,8 @@ static GtkTreeModel *list_create_model() {
     GtkTreeIter child_iter;
     GtkTreeStore *store = gtk_tree_store_new(NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT);
 
-    add_section_to(store, &parent_iter, "FAQ");
+    gtk_tree_store_append(store, &parent_iter, NULL);
+    gtk_tree_store_set(store, &parent_iter, COL_SECTION, "FAQ", COL_GUIDE, "", COL_FILENAME, FAQ, -1);
 
     gtk_tree_store_append(store, &child_iter, &parent_iter);
     gtk_tree_store_set(store, &child_iter, COL_SECTION, "", COL_GUIDE, "How do I Create a Contact?", COL_FILENAME, CREATINGACONTACT, -1);
@@ -50,7 +52,8 @@ static GtkTreeModel *list_create_model() {
     gtk_tree_store_append(store, &child_iter, &parent_iter);
     gtk_tree_store_set(store, &child_iter, COL_SECTION, "", COL_GUIDE, "How do I Edit a Contact?", COL_FILENAME, EDITINGACONTACT, -1);
 
-    add_section_to(store, &parent_iter, "Contact information");
+    gtk_tree_store_append(store, &parent_iter, NULL);
+    gtk_tree_store_set(store, &parent_iter, COL_SECTION, "Contact Information", COL_GUIDE, "", COL_FILENAME, CONTACTINFORMATION, -1);
 
     gtk_tree_store_append(store, &child_iter, &parent_iter);
     gtk_tree_store_set(store, &child_iter, COL_SECTION, "", COL_GUIDE, "Name", COL_FILENAME, NAMEEXPLAINED, -1);
@@ -130,6 +133,9 @@ static void change_guide_to_selection(GtkWidget *selection, gpointer nu) {
             break;
         case EDITINGACONTACT:
             open_guide("../src/help/editingacontact");
+            break;
+        case CONTACTINFORMATION:
+            open_guide("../src/help/contactinformation");
             break;
         case NAMEEXPLAINED:
             open_guide("../src/help/nameexplained");

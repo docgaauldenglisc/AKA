@@ -1,4 +1,4 @@
-<span foreground='Black' weight='bold' size='xx-large'>Name</span>
+<span weight='bold' size='xx-large'>Name</span>
 
 The <b>Name</b> of a <b>Contact</b> is the most important identifier of said <b>Contact</b>,
 and must not be blank.
