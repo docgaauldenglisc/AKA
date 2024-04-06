@@ -1,0 +1,6 @@
+<span foreground='Black' weight='bold' size='xx-large'>Name</span>
+
+The <b>Name</b> of a <b>Contact</b> is the most important identifier of said <b>Contact</b>,
+and must not be blank.
+
+Aside from that requirement, the <b>Name</b> can be whatever you want it to be.

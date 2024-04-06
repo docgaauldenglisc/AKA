@@ -1,0 +1,10 @@
+<span foreground='Black' weight='bold' size='xx-large'>Title</span>
+
+The <b>Title</b> of a contact is specifically their job title, for example:
+<b>Manager</b>,
+<b>Developer</b>,
+<b>Construction Worker</b>,
+<b>Civil Engineer</b>,
+and the like.
+
+There are no requirements for this field and it can be left blank.

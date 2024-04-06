@@ -1,0 +1,20 @@
+<span foreground='Black' weight='bold' size='xx-large'>Phone Number</span>
+
+The <b>Phone Number</b> of a <b>Contact</b> can be left blank, but when it is entered,
+the input must look like it is a phone number.
+
+For example, the following are <b>valid</b>:
+(123) 456-7890
+(123)-456-7890
++1 (123) 456-7890
++1-939 (123) 456-7890
+123 456 7890
+123 HEY HELO
+
+And the following are <b>invalid</b>:
+thisisaphonenumber
+123 hello hello
+1234567890
+-1 (123) 456-7890
++1-1-939 (123) 456-7890
+123 456 7890 home
