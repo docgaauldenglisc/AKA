@@ -22,7 +22,7 @@ int rgx_check_phone(char *phone) {
     if (phone[0] == '\0') {
         return 0;
     }
-    const char *pattern = "^(\\+[0-9]+|\\+[0-9]+-[0-9]+|)( |)((\\(|)\\d{3}(\\)|))(-| )(.{3})(-| )(.{4})$";
+    const char *pattern = "^(\\+\\d+|\\+\\d+-\\d+|)( |)((\\(|)\\d{3}(\\)|))(-| )(.{3})(-| )(.{4})$";
     const char *error;
     int rc;
     pcre *re;
