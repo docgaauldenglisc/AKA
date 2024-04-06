@@ -210,5 +210,5 @@ void help_open_window() {
     gtk_window_set_default_size(GTK_WINDOW(win), WINDOW_WIDTH, WINDOW_HEIGHT);
     gtk_widget_show_all(win);
 
-    open_guide("../src/help/faq");
+    open_guide("../src/help/actions");
 }
