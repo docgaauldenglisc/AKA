@@ -20,7 +20,7 @@ enum {
 };
 
 enum {
-    FAQ,
+    ACTIONS,
     CREATINGACONTACT,
     DELETINGACONTACT,
     EDITINGACONTACT,
@@ -39,16 +39,16 @@ static GtkTreeModel *list_create_model() {
     GtkTreeStore *store = gtk_tree_store_new(NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT);
 
     gtk_tree_store_append(store, &parent_iter, NULL);
-    gtk_tree_store_set(store, &parent_iter, COL_SECTION, "FAQ", COL_GUIDE, "", COL_FILENAME, FAQ, -1);
+    gtk_tree_store_set(store, &parent_iter, COL_SECTION, "Actions", COL_GUIDE, "", COL_FILENAME, ACTIONS, -1);
 
     gtk_tree_store_append(store, &child_iter, &parent_iter);
-    gtk_tree_store_set(store, &child_iter, COL_SECTION, "", COL_GUIDE, "How do I Create a Contact?", COL_FILENAME, CREATINGACONTACT, -1);
+    gtk_tree_store_set(store, &child_iter, COL_SECTION, "", COL_GUIDE, "Creating a Contact", COL_FILENAME, CREATINGACONTACT, -1);
 
     gtk_tree_store_append(store, &child_iter, &parent_iter);
-    gtk_tree_store_set(store, &child_iter, COL_SECTION, "", COL_GUIDE, "How do I Delete a Contact?", COL_FILENAME, DELETINGACONTACT, -1);
+    gtk_tree_store_set(store, &child_iter, COL_SECTION, "", COL_GUIDE, "Deleting a Contact", COL_FILENAME, DELETINGACONTACT, -1);
 
     gtk_tree_store_append(store, &child_iter, &parent_iter);
-    gtk_tree_store_set(store, &child_iter, COL_SECTION, "", COL_GUIDE, "How do I Edit a Contact?", COL_FILENAME, EDITINGACONTACT, -1);
+    gtk_tree_store_set(store, &child_iter, COL_SECTION, "", COL_GUIDE, "Editing a Contact", COL_FILENAME, EDITINGACONTACT, -1);
 
     gtk_tree_store_append(store, &parent_iter, NULL);
     gtk_tree_store_set(store, &parent_iter, COL_SECTION, "Contact Information", COL_GUIDE, "", COL_FILENAME, CONTACTINFORMATION, -1);
@@ -129,8 +129,8 @@ static void change_guide_to_selection(GtkWidget *selection, gpointer nu) {
     if(gtk_tree_selection_get_selected(GTK_TREE_SELECTION(selection), &model, &iter)) {
         gtk_tree_model_get(model, &iter, COL_FILENAME, &file_num, -1);
         switch (file_num) {
-        case FAQ:
-            open_guide("../src/help/faq");
+        case ACTIONS:
+            open_guide("../src/help/actions");
             break;
         case CREATINGACONTACT:
             open_guide("../src/help/creatingacontact");
