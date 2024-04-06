@@ -8,7 +8,10 @@ GtkWidget *g_guide_frame;
 
 static GtkTreeModel *list_create_model();
 static GtkWidget *list_create_view();
+static void text_create_buffer();
+static void open_faq_guide();
 static void open_create_contact_guide();
+static void change_guide_to_selection();
 void help_open_window();
 
 enum {
@@ -32,7 +35,8 @@ static GtkTreeModel *list_create_model() {
     gtk_tree_store_set(store, &parent_iter, COL_SECTION, "FAQ", COL_GUIDE, "", COL_FILENAME, FAQ, -1);
 
     gtk_tree_store_append(store, &child_iter, &parent_iter);
-    gtk_tree_store_set(store, &child_iter, COL_SECTION, "", COL_GUIDE, "guide", COL_FILENAME, CREATINGACONTACT, -1);
+    gtk_tree_store_set(store, &child_iter, COL_SECTION, "", COL_GUIDE, "Creating a Contact", COL_FILENAME, CREATINGACONTACT, -1);
+
 
     GtkTreeModel *model = GTK_TREE_MODEL(store);
     return model;
@@ -52,9 +56,17 @@ static GtkWidget *list_create_view() {
     return view;
 }
 
+static void text_create_buffer() {
+    //g_text_view;    
+    GtkTextBuffer *buf = gtk_text_buffer_new(NULL);
+    gtk_text_view_set_buffer(GTK_TEXT_VIEW(g_text_view), buf);
+}
+
 static void open_faq_guide() {
     GtkTextBuffer *text_buf;
     GtkTextIter iter;
+
+    text_create_buffer();
 
     char *guide = NULL;
     FILE *file;
@@ -83,6 +95,8 @@ static void open_create_contact_guide() {
     GtkTextBuffer *text_buf;
     GtkTextIter iter;
 
+    text_create_buffer();
+
     char *guide = NULL;
     FILE *file;
     size_t len = 0;
@@ -104,11 +118,29 @@ static void open_create_contact_guide() {
     gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(g_text_view), FALSE);
 }
 
+static void change_guide_to_selection(GtkWidget *selection, gpointer nu) {
+    GtkTreeModel *model;
+    GtkTreeIter iter;
+    int file_num;
+    if(gtk_tree_selection_get_selected(GTK_TREE_SELECTION(selection), &model, &iter)) {
+        gtk_tree_model_get(model, &iter, COL_FILENAME, &file_num, -1);
+        switch (file_num) {
+        case FAQ:
+            open_faq_guide();
+            break;
+        case CREATINGACONTACT:
+            open_create_contact_guide();
+            break;
+        }
+    }
+}
+
 void help_open_window() {
     GtkWidget *win;
         GtkWidget *help_box;
             GtkWidget *scrolled_list_container;
                 GtkWidget *list_view;
+                GtkTreeSelection *selection;
             //g_guide_frame;
                 GtkWidget *scrolled_text_container;
                 //g_text_view;
@@ -128,6 +160,12 @@ void help_open_window() {
     gtk_widget_set_hexpand(g_text_view, TRUE);
     gtk_text_view_set_editable(GTK_TEXT_VIEW(g_text_view), FALSE);
     gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(g_text_view), FALSE);
+
+    selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(list_view));
+    gtk_tree_selection_set_mode(selection, GTK_SELECTION_SINGLE);
+    g_signal_connect(selection, "changed", G_CALLBACK(change_guide_to_selection), NULL);
+
+    gtk_tree_view_expand_all(GTK_TREE_VIEW(list_view));
 
     gtk_container_add(GTK_CONTAINER(scrolled_list_container), list_view);
     gtk_container_add(GTK_CONTAINER(help_box), scrolled_list_container);
