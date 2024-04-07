@@ -24,6 +24,7 @@ enum {
     NUM_COLS
 };
 
+int g_search_opt;
 ListView g_list_view;
 GtkWidget *g_view_frame;
 GtkWidget *g_win;
@@ -592,7 +593,6 @@ static void main_window(GtkApplication *app) {
     delete_contact_item = gtk_menu_item_new_with_label("Delete Contact");
     help_menu = gtk_menu_new();
     help_menu_item = gtk_menu_item_new_with_label("Help");
-    adding_contacts_item = gtk_menu_item_new_with_label("Adding Contacts");
     main_grid = gtk_grid_new();
     new_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     new_contact_button = gtk_button_new_with_label("+");
@@ -618,10 +618,7 @@ static void main_window(GtkApplication *app) {
     g_signal_connect(edit_contact_item, "activate", G_CALLBACK(switch_to_edit_contact_frame), view_frame);
     g_signal_connect(delete_contact_item, "activate", G_CALLBACK(gui_delete_contact), NULL);
 
-    gtk_menu_item_set_submenu(GTK_MENU_ITEM(help_menu_item), help_menu);
-    gtk_menu_shell_append(GTK_MENU_SHELL(help_menu), adding_contacts_item);
-
-    g_signal_connect(adding_contacts_item, "activate", G_CALLBACK(help_open_window), NULL);
+    g_signal_connect(help_menu_item, "activate", G_CALLBACK(help_open_window), NULL);
 
     gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), file_menu_item);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), edit_menu_item);
@@ -655,9 +652,9 @@ static void main_window(GtkApplication *app) {
     gtk_frame_set_label_align(GTK_FRAME(view_frame), 0.5, 1.0);
 
     //gtk_container_add(GTK_CONTAINER(list_frame), list->view);
-    gtk_grid_attach(GTK_GRID(list_grid), search_entry,      0, 0, 1, 1);
-    gtk_grid_attach(GTK_GRID(list_grid), refresh_button,    1, 0, 1, 1);
-    gtk_grid_attach(GTK_GRID(list_grid),scrolled_list_frame,0, 1, 2, 2);
+    gtk_grid_attach(GTK_GRID(list_grid), search_entry           , 0, 0, 1, 1);
+    gtk_grid_attach(GTK_GRID(list_grid), refresh_button         , 1, 0, 1, 1);
+    gtk_grid_attach(GTK_GRID(list_grid), scrolled_list_frame    , 0, 1, 2, 1);
     gtk_container_add(GTK_CONTAINER(list_frame), list_grid);
     gtk_container_add(GTK_CONTAINER(scrolled_list_frame), list->view);
 
