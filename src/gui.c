@@ -43,6 +43,7 @@ static void switch_to_view_contact_frame(GtkTreeSelection *selection, GtkWidget 
 static void gui_save_contact(GtkWidget *nu, gpointer data);
 static void on_file_select(GtkFileChooserButton *button, gpointer data);
 static void switch_to_new_contact_frame(GtkWidget *nu, GtkWidget *view_frame);
+static void open_backup_dialog(GtkWidget *nu, GtkWidget *nu2);
 static void main_window(GtkApplication *app);
 int gui_init(int argc, char **argv);
 
@@ -547,6 +548,32 @@ static void switch_to_new_contact_frame(GtkWidget *nu, GtkWidget *view_frame) {
     gtk_widget_show_all(view_frame);
 }
 
+static void open_backup_dialog(GtkWidget *nu, GtkWidget *nu2) {
+    GtkWidget *dialog;
+        GtkFileChooser *chooser;
+        GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_SAVE;
+        gint res;
+
+    dialog = gtk_file_chooser_dialog_new("Save File", GTK_WINDOW(g_win), action, ("_Cancel"), GTK_RESPONSE_CANCEL, 
+                ("_Save"), GTK_RESPONSE_ACCEPT, NULL);
+    chooser = GTK_FILE_CHOOSER(dialog);
+
+    gtk_file_chooser_set_do_overwrite_confirmation(chooser, TRUE);
+
+    gtk_file_chooser_set_current_folder(chooser, g_get_home_dir());
+
+    res = gtk_dialog_run(GTK_DIALOG(dialog));
+    if (res == GTK_RESPONSE_ACCEPT) {
+        char *filename;
+
+        filename = gtk_file_chooser_get_filename(chooser);
+        db_backup_at(filename);
+        g_free(filename);
+    }
+
+    gtk_widget_destroy(dialog);
+}
+
 static void main_window(GtkApplication *app) {
     //Prevents a segfault if the user presses "Delete Contact" in the edit menu
     //before selecting one.
@@ -558,6 +585,7 @@ static void main_window(GtkApplication *app) {
                 GtkWidget *file_menu;
                     GtkWidget *file_menu_item;
                     GtkWidget *new_contact_item;
+                    GtkWidget *backup_item;
                 GtkWidget *edit_menu;
                     GtkWidget *edit_menu_item;
                     GtkWidget *edit_contact_item;
@@ -587,6 +615,7 @@ static void main_window(GtkApplication *app) {
     file_menu = gtk_menu_new();
     file_menu_item = gtk_menu_item_new_with_label("File");
     new_contact_item = gtk_menu_item_new_with_label("New Contact");
+    backup_item = gtk_menu_item_new_with_label("Backup Contacts");
     edit_menu = gtk_menu_new();
     edit_menu_item = gtk_menu_item_new_with_label("Edit");
     edit_contact_item = gtk_menu_item_new_with_label("Edit Contact");
@@ -608,8 +637,10 @@ static void main_window(GtkApplication *app) {
 
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(file_menu_item), file_menu);
     gtk_menu_shell_append(GTK_MENU_SHELL(file_menu), new_contact_item);
+    gtk_menu_shell_append(GTK_MENU_SHELL(file_menu), backup_item);
 
     g_signal_connect(new_contact_item, "activate", G_CALLBACK(switch_to_new_contact_frame), view_frame);
+    g_signal_connect(backup_item, "activate", G_CALLBACK(open_backup_dialog), NULL);
 
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(edit_menu_item), edit_menu);
     gtk_menu_shell_append(GTK_MENU_SHELL(edit_menu), edit_contact_item);

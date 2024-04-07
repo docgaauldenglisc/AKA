@@ -12,6 +12,7 @@ int g_search_count = 0;
 idList g_ids = {.ids = NULL, .id_amount = 0};
 
 static void edit_contact_for_delete(ContactText *con);
+int db_backup_at(char *filename);
 void db_delete_contact(int id);
 int db_save_contact(ContactText *con);
 int db_edit_contact(ContactText *con);
@@ -44,6 +45,55 @@ static int search_set_ids(void *data, int argc, char **argv, char **az_col_name)
     g_ids.ids[g_search_count] = atoi(argv[0]);
 
     g_search_count++;
+    return 0;
+}
+
+int db_backup_at(char *filename) {
+    puts("hello");
+    sqlite3 *orig_db;
+    sqlite3 *bak_db;
+    sqlite3_stmt *bak_stmt;
+    char *err = 0;
+    int rc;
+
+    rc = sqlite3_open("Contacts.db", &orig_db);
+    if (rc) {
+        puts("Couldn't open the original database");
+    }
+    rc = sqlite3_open(filename, &bak_db);
+    if (rc) {
+        puts("Couldn't open the backup database");
+    }
+
+    const char *database_schema = "CREATE TABLE IF NOT EXISTS contacts (" \
+                                  "ID INT PRIMARY KEY NOT NULL, " \ 
+                                  "NAME TEXT NOT NULL, " \
+                                  "TITLE TEXT, " \
+                                  "PHONE TEXT, " \
+                                  "EMAIL TEXT, " \ 
+                                  "ORG TEXT, " \
+                                  "ADDRESS TEXT, " \
+                                  "EXTRA TEXT, " \
+                                  "PHOTOLOC TEXT " \
+                                  ");";
+
+    sqlite3_exec(bak_db, database_schema, NULL, 0, &err);
+
+    const char *attach_db = "ATTACH DATABASE ? AS 'bak';";
+    const char *copy_contacts = "INSERT INTO bak.contacts SELECT * FROM contacts;";
+
+    sqlite3_prepare_v2(orig_db, attach_db, -1, &bak_stmt, NULL);
+    sqlite3_bind_text(bak_stmt, 1, filename, -1, SQLITE_STATIC);
+
+    printf("SQLITE STATEMENT %s\n", sqlite3_expanded_sql(bak_stmt));
+    sqlite3_exec(orig_db, sqlite3_expanded_sql(bak_stmt), NULL, 0, &err);
+    sqlite3_exec(orig_db, copy_contacts, NULL, 0, &err);
+
+    sqlite3_finalize(bak_stmt);
+
+    sqlite3_close(orig_db);
+    sqlite3_close(bak_db);
+
     return 0;
 }
 
