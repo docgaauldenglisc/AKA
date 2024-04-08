@@ -1,88 +1,84 @@
 #include <stdio.h>
+#include <stdbool.h>
 #include <string.h>
+
 #include <pcre.h>
 
+//implements 
 #include "rgx.h"
 
+#define GOOD 0
+#define BAD 1
+
+bool string_is_empty(char *str);
 int rgx_check_phone(char *phone);
 int rgx_check_email(char *email);
 int rgx_check_address(char *address);
 
-/*
- * Doesn't even use regex, just returns 1 if the name string is empty.
- */
-int rgx_check_name(char *name) {
-    if (name[0] == '\0') {
-        return 1;
+bool string_is_empty(char *str) {
+    if (str[0] == '\0') {
+        return true;
     }
-    return 0;
+    return false; 
+}
+
+bool match_str(const char *str, const char *pattern) {
+    const char *error;
+    int rc;
+    pcre *re;
+    int error_offset;
+    
+    re = pcre_compile(pattern, 0, &error, &error_offset, NULL);
+    rc = pcre_exec(re, NULL, str, strlen(str), 0, 0, NULL, 0);
+    if (rc >= 0) {
+        pcre_free(re);
+        return true;
+    }
+    else {
+        pcre_free(re);
+        return false;
+    }
+}
+
+int rgx_check_name(char *name) {
+    return (string_is_empty(name));
 }
 
 int rgx_check_phone(char *phone) {
-    if (phone[0] == '\0') {
-        return 0;
+    if (string_is_empty(phone)) {
+        return GOOD;
     }
     const char *pattern = "^(\\+\\d+|\\+\\d+-\\d+|)( |)((\\(|)\\d{3}(\\)|))(-| )(.{3})(-| )(.{4})$";
-    const char *error;
-    int rc;
-    pcre *re;
-    int error_offset;
-    
-    re = pcre_compile(pattern, 0, &error, &error_offset, NULL);
-
-    rc = pcre_exec(re, NULL, phone, strlen(phone), 0, 0, NULL, 0);
-    if (rc >= 0) {
-        return 0;
+    if (match_str(phone, pattern)) {
+        return GOOD;
     }
     else {
-        return 1;
+        return BAD;
     }
-
-    pcre_free(re);
 }
 
 int rgx_check_email(char *email) {
-    if (email[0] == '\0') {
-        return 0;
+    if (string_is_empty(email)) {
+        return GOOD;
     }
     const char *pattern = "((^(\\w)+)(@(\\w)+)(\\.[a-zA-Z]+$|\\.[a-zA-Z]+\\.\\w{2}$))";
-    const char *error;
-    int rc;
-    pcre *re;
-    int error_offset;
-    
-    re = pcre_compile(pattern, 0, &error, &error_offset, NULL);
-
-    rc = pcre_exec(re, NULL, email, strlen(email), 0, 0, NULL, 0);
-    if (rc >= 0) {
-        return 0;
+    if (match_str(email, pattern)) {
+        return GOOD;
     }
     else {
-        return 1;
+        return BAD;
     }
-
-    pcre_free(re);
 }
 
 int rgx_check_address(char *address) {
-    if (address[0] == '\0') {
-        return 0;
+    if (string_is_empty(address)) {
+        return GOOD;
     }
     const char *pattern = "\\d+ ([\\w| ]+|[\\w| ]+,[\\w| ]+), [a-zA-Z]{2,}, [0-9]{5,}";
-    const char *error;
-    int rc;
-    pcre *re;
-    int error_offset;
-    
-    re = pcre_compile(pattern, 0, &error, &error_offset, NULL);
-
-    rc = pcre_exec(re, NULL, address, strlen(address), 0, 0, NULL, 0);
-    if (rc >= 0) {
-        return 0;
+    if (match_str(address, pattern)) {
+        return GOOD;
     }
     else {
-        return 1;
+        return BAD;
     }
-
-    pcre_free(re);
 }
