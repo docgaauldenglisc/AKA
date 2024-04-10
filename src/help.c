@@ -34,53 +34,54 @@ enum {
 };
 
 static GtkTreeModel *list_create_model() {
+    //Welcome to unreadable city.
+    //Basically, it adds each article that should be in the help folder into the list
     GtkTreeIter parent_iter;
     GtkTreeIter child_iter;
     GtkTreeStore *store = gtk_tree_store_new(NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT);
-
     gtk_tree_store_append(store, &parent_iter, NULL);
-    gtk_tree_store_set(store, &parent_iter, COL_SECTION, "Actions", COL_GUIDE, "", COL_FILENAME, ACTIONS, -1);
-
+    gtk_tree_store_set(store, &parent_iter, COL_SECTION, "Actions", COL_GUIDE, "", COL_FILENAME,
+            ACTIONS, -1);
     gtk_tree_store_append(store, &child_iter, &parent_iter);
-    gtk_tree_store_set(store, &child_iter, COL_SECTION, "", COL_GUIDE, "Creating a Contact", COL_FILENAME, CREATINGACONTACT, -1);
-
+    gtk_tree_store_set(store, &child_iter, COL_SECTION, "", COL_GUIDE, "Creating a Contact",
+            COL_FILENAME, CREATINGACONTACT, -1);
     gtk_tree_store_append(store, &child_iter, &parent_iter);
-    gtk_tree_store_set(store, &child_iter, COL_SECTION, "", COL_GUIDE, "Deleting a Contact", COL_FILENAME, DELETINGACONTACT, -1);
-
+    gtk_tree_store_set(store, &child_iter, COL_SECTION, "", COL_GUIDE, "Deleting a Contact",
+            COL_FILENAME, DELETINGACONTACT, -1);
     gtk_tree_store_append(store, &child_iter, &parent_iter);
-    gtk_tree_store_set(store, &child_iter, COL_SECTION, "", COL_GUIDE, "Editing a Contact", COL_FILENAME, EDITINGACONTACT, -1);
-
+    gtk_tree_store_set(store, &child_iter, COL_SECTION, "", COL_GUIDE, "Editing a Contact",
+            COL_FILENAME, EDITINGACONTACT, -1);
     gtk_tree_store_append(store, &parent_iter, NULL);
-    gtk_tree_store_set(store, &parent_iter, COL_SECTION, "Contact Information", COL_GUIDE, "", COL_FILENAME, CONTACTINFORMATION, -1);
-
+    gtk_tree_store_set(store, &parent_iter, COL_SECTION, "Contact Information", COL_GUIDE, "",
+            COL_FILENAME, CONTACTINFORMATION, -1);
     gtk_tree_store_append(store, &child_iter, &parent_iter);
-    gtk_tree_store_set(store, &child_iter, COL_SECTION, "", COL_GUIDE, "Name", COL_FILENAME, NAMEEXPLAINED, -1);
-
+    gtk_tree_store_set(store, &child_iter, COL_SECTION, "", COL_GUIDE, "Name", COL_FILENAME,
+            NAMEEXPLAINED, -1);
     gtk_tree_store_append(store, &child_iter, &parent_iter);
-    gtk_tree_store_set(store, &child_iter, COL_SECTION, "", COL_GUIDE, "Title", COL_FILENAME, TITLEEXPLAINED, -1);
-
+    gtk_tree_store_set(store, &child_iter, COL_SECTION, "", COL_GUIDE, "Title", COL_FILENAME,
+            TITLEEXPLAINED, -1);
     gtk_tree_store_append(store, &child_iter, &parent_iter);
-    gtk_tree_store_set(store, &child_iter, COL_SECTION, "", COL_GUIDE, "Phone Number", COL_FILENAME, PHONENUMBEREXPLAINED, -1);
-
+    gtk_tree_store_set(store, &child_iter, COL_SECTION, "", COL_GUIDE, "Phone Number",
+            COL_FILENAME, PHONENUMBEREXPLAINED, -1);
     gtk_tree_store_append(store, &child_iter, &parent_iter);
-    gtk_tree_store_set(store, &child_iter, COL_SECTION, "", COL_GUIDE, "Email", COL_FILENAME, EMAILEXPLAINED, -1);
-
+    gtk_tree_store_set(store, &child_iter, COL_SECTION, "", COL_GUIDE, "Email", COL_FILENAME,
+            EMAILEXPLAINED, -1);
     gtk_tree_store_append(store, &child_iter, &parent_iter);
-    gtk_tree_store_set(store, &child_iter, COL_SECTION, "", COL_GUIDE, "Organization", COL_FILENAME, ORGEXPLAINED, -1);
-
+    gtk_tree_store_set(store, &child_iter, COL_SECTION, "", COL_GUIDE, "Organization",
+            COL_FILENAME, ORGEXPLAINED, -1);
     gtk_tree_store_append(store, &child_iter, &parent_iter);
-    gtk_tree_store_set(store, &child_iter, COL_SECTION, "", COL_GUIDE, "Address", COL_FILENAME, ADDRESSEXPLAINED, -1);
+    gtk_tree_store_set(store, &child_iter, COL_SECTION, "", COL_GUIDE, "Address", COL_FILENAME,
+            ADDRESSEXPLAINED, -1);
 
     GtkTreeModel *model = GTK_TREE_MODEL(store);
     return model;
 }
 
 static GtkWidget *list_create_view() {
-    GtkCellRenderer *renderer;
     GtkTreeModel *model = list_create_model();
     GtkWidget *view = gtk_tree_view_new();
+    GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
 
-    renderer = gtk_cell_renderer_text_new();
     gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Section", renderer, "text", 0, NULL);
     gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Guide", renderer, "text", 1, NULL);
 
@@ -90,31 +91,31 @@ static GtkWidget *list_create_view() {
 }
 
 static void text_create_buffer() {
-    //g_text_view;    
     GtkTextBuffer *buf = gtk_text_buffer_new(NULL);
     gtk_text_view_set_buffer(GTK_TEXT_VIEW(g_text_view), buf);
 }
 
-static void open_guide(char *guide) {
-    GtkTextBuffer *text_buf;
-    GtkTextIter iter;
-
-    text_create_buffer();
-
+static char *read_file(FILE *file, char *loc) {
     char *article = NULL;
-    FILE *file;
     size_t len = 0;
-    file = fopen(guide, "r");
+    file = fopen(loc, "r");
     if (file == NULL) {
         puts("Can't open file!");
-        return;
+        return NULL;
     }
     getdelim(&article, &len, '\0', file);
+    return article;
+}
 
-    text_buf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(g_text_view));
+static void open_guide(char *guide) {
+    GtkTextIter iter;
+    FILE *file = NULL;
 
+    char *article = read_file(file, guide);
+    text_create_buffer();
+
+    GtkTextBuffer *text_buf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(g_text_view));
     gtk_text_buffer_get_end_iter(text_buf, &iter);
-
     gtk_text_buffer_insert_markup(text_buf, &iter, article, strlen(article)); 
 
     gtk_widget_set_hexpand(g_text_view, TRUE);
@@ -200,10 +201,8 @@ void help_open_window() {
 
     gtk_container_add(GTK_CONTAINER(scrolled_list_container), list_view);
     gtk_container_add(GTK_CONTAINER(help_box), scrolled_list_container);
-
     gtk_container_add(GTK_CONTAINER(g_guide_frame), scrolled_text_container);
     gtk_container_add(GTK_CONTAINER(scrolled_text_container), g_text_view);
-
     gtk_container_add(GTK_CONTAINER(help_box), g_guide_frame);
     gtk_container_add(GTK_CONTAINER(win), help_box);
 
