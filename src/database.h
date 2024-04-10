@@ -2,6 +2,18 @@
 #define DATABASE_H
 
 typedef struct {
+    char *id;
+    char *name;
+    char *title;
+    char *phone;
+    char *email;
+    char *org;
+    char *address;
+    char *extra;
+    char *photoloc;
+} ContactText;
+
+typedef struct {
     int *ids;
     int id_amount;
 } idList;

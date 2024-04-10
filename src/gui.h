@@ -3,20 +3,6 @@
 
 #include <gtk/gtk.h>
 
-static const int WINDOW_WIDTH = 1280;
-static const int WINDOW_HEIGHT = 720;
-
-typedef struct {
-    char *id;
-    char *name;
-    char *title;
-    char *phone;
-    char *email;
-    char *org;
-    char *address;
-    char *extra;
-    char *photoloc;
-} ContactText;
 
 typedef struct {
     GtkWidget *name;
@@ -27,17 +13,10 @@ typedef struct {
     GtkWidget *address;
     GtkWidget *extra;
     GtkWidget *photoloc;
-} ContactEntries;
+} ContactWidgets;
 
-typedef struct {
-    GtkTreeModel *model;
-    GtkWidget *view;
-} ListView;
-
-typedef struct {
-    ContactText *con;
-    ContactEntries *enter;
-} Contact;
+static const int WINDOW_WIDTH = 1280;
+static const int WINDOW_HEIGHT = 720;
 
 int gui_init(int argc, char **argv);
 

@@ -5,7 +5,6 @@
 #include <regex.h>
 
 //implements
-#include "gui.h"
 #include "database.h"
 
 #include "rgx.h"
@@ -306,7 +305,6 @@ int db_save_contact(ContactText *con) {
 
 int db_init() {
     sqlite3 *db;
-    int rc;
     char *err;
 
     sqlite3_open("Contacts.db", &db);
