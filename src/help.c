@@ -31,6 +31,7 @@ enum {
     EMAILEXPLAINED,
     ORGEXPLAINED,
     ADDRESSEXPLAINED,
+    EXTRAEXPLAINED,
 };
 
 static GtkTreeModel *list_create_model() {
@@ -72,6 +73,9 @@ static GtkTreeModel *list_create_model() {
     gtk_tree_store_append(store, &child_iter, &parent_iter);
     gtk_tree_store_set(store, &child_iter, COL_SECTION, "", COL_GUIDE, "Address", COL_FILENAME,
             ADDRESSEXPLAINED, -1);
+    gtk_tree_store_append(store, &child_iter, &parent_iter);
+    gtk_tree_store_set(store, &child_iter, COL_SECTION, "", COL_GUIDE, "Extra", COL_FILENAME,
+            EXTRAEXPLAINED, -1);
 
     GtkTreeModel *model = GTK_TREE_MODEL(store);
     return model;
@@ -162,6 +166,9 @@ static void change_guide_to_selection(GtkWidget *selection, gpointer nu) {
             break;
         case ADDRESSEXPLAINED:
             open_guide("../src/help/addressexplained");
+            break;
+        case EXTRAEXPLAINED:
+            open_guide("../src/help/extraexplained");
             break;
         }
     }
