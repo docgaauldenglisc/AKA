@@ -7,21 +7,22 @@
 #include "help.h"
 #include "database.h"
 
+static void alloc_frame_size();
 static void gui_send_error(char *err);
-static void gui_delete_contact(GtkWidget *nu, gpointer data);
+static void gui_delete_contact();
 static void remove_child_from(GtkWidget *container);
 static GtkTreeModel *list_create_model();
 static GtkWidget *list_create_view();
 static void list_refresh();
-static void search_callback(GtkWidget *search_entry, gpointer data);
+static void search_callback(GtkWidget *search_entry);
 static void on_file_select(GtkFileChooserButton *button, gpointer data);
 static void gui_save_contact();
 static void switch_to_new_contact_frame();
 static void gui_edit_contact();
 static void switch_to_edit_contact_frame();
-static void switch_to_view_contact_frame(GtkTreeSelection *selection, GtkWidget *nu);
+static void switch_to_view_contact_frame(GtkTreeSelection *selection);
 static void open_backup_dialog();
-static void main_window(GtkApplication *app);
+static void setup_main_window(GtkApplication *app);
 int gui_init(int argc, char **argv);
 
 enum {
@@ -55,6 +56,13 @@ GtkWidget *g_win;
 ContactText g_contact;
 ContactWidgets g_entries;
 
+static void alloc_frame_size() {
+    GtkAllocation allocation;
+    gtk_widget_get_allocation(g_win, &allocation);
+    int min_width = (int)(0.25 * allocation.width);    
+    gtk_widget_set_size_request(GTK_WIDGET(g_view_frame), min_width, -1);
+}
+
 static void gui_send_error(char *err) {
     GtkDialogFlags flags = GTK_DIALOG_DESTROY_WITH_PARENT;
     GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(g_win), flags, GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, err);
@@ -62,11 +70,12 @@ static void gui_send_error(char *err) {
     gtk_widget_destroy(dialog);
 }
 
-static void gui_delete_contact(GtkWidget *nu, gpointer nu2) {
-    if (atoi(g_contact.id) == 0) {
+static void gui_delete_contact() {
+    if (!g_contact.id) {
         return;
     }
     db_delete_contact(atoi(g_contact.id)); 
+    puts(g_contact.id);
     list_refresh();
 }
 
@@ -77,9 +86,7 @@ static void remove_child_from(GtkWidget *container) {
     }
 }
 
-static void search_callback(GtkWidget *search_entry, gpointer data) {
-    GtkTreeView *list_view = (GtkTreeView *)data;
-
+static void search_callback(GtkWidget *search_entry) {
     char *query = (char*)gtk_entry_buffer_get_text(gtk_entry_get_buffer(GTK_ENTRY(search_entry)));
     if (query[0] == '\0') {
         list_refresh();
@@ -89,17 +96,16 @@ static void search_callback(GtkWidget *search_entry, gpointer data) {
     idList ids = {.ids = NULL, .id_amount = 0};
     ids = db_search(query);
 
-    if (gtk_tree_view_get_model(GTK_TREE_VIEW(list_view)) != NULL) {
-        g_object_unref(gtk_tree_view_get_model(GTK_TREE_VIEW(list_view)));
+    if (gtk_tree_view_get_model(GTK_TREE_VIEW(g_list_view.view)) != NULL) {
+        g_object_unref(gtk_tree_view_get_model(GTK_TREE_VIEW(g_list_view.view)));
     }
-    remove_child_from(GTK_WIDGET(gtk_tree_view_get_model(GTK_TREE_VIEW(list_view))));
+    remove_child_from(GTK_WIDGET(gtk_tree_view_get_model(GTK_TREE_VIEW(g_list_view.view))));
 
     GtkTreeIter iter;
     //this makes eight string columns in the list
     GtkTreeStore *store = gtk_tree_store_new(NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
                                              G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
                                              G_TYPE_STRING, G_TYPE_STRING);
-    //TODO make sure that change to tree store doesn't cause issues
     int max = ids.id_amount;
     for (int i = 0; i < max; i++) {
         char *id = db_get("ID", ids.ids[i]);
@@ -115,7 +121,7 @@ static void search_callback(GtkWidget *search_entry, gpointer data) {
     }
     GtkTreeModel *model = GTK_TREE_MODEL(store);
 
-    gtk_tree_view_set_model(GTK_TREE_VIEW(list_view), model);
+    gtk_tree_view_set_model(GTK_TREE_VIEW(g_list_view.view), model);
 }
 
 static bool name_is_del(int i) {
@@ -137,7 +143,6 @@ static GtkTreeModel *list_create_model() {
             //don't add it to the list
         }
         else {
-            //TODO see if these can be freed
             //Id is already known, so it doesn't need to be grabbed from the database
             char *id = malloc(sizeof(char) * 11);
             snprintf(id, 11, "%i", i);
@@ -152,6 +157,13 @@ static GtkTreeModel *list_create_model() {
             gtk_tree_store_set(store, &iter, COL_ID, id, COL_NAME, name, COL_TITLE, title,
                                COL_PHONE, phone, COL_EMAIL, email, COL_ORG, org,
                                COL_ADDRESS, address, -1);
+            free(id);
+            free(name);
+            free(title);
+            free(phone);
+            free(email);
+            free(org);
+            free(address);
         }
     }
     GtkTreeModel *model = GTK_TREE_MODEL(store);
@@ -177,6 +189,7 @@ static GtkWidget *list_create_view() {
 }
 
 static void list_refresh() {
+    alloc_frame_size();
     g_list_view.model = list_create_model();
     gtk_tree_view_set_model(GTK_TREE_VIEW(g_list_view.view), g_list_view.model);
 }
@@ -211,7 +224,8 @@ static void gui_edit_contact() {
 }
 
 static void switch_to_edit_contact_frame() {
-    if (g_contact.id == NULL) {
+    alloc_frame_size();
+    if (!g_contact.id) {
         return;
     }
     remove_child_from(g_view_frame);
@@ -244,9 +258,15 @@ static void switch_to_edit_contact_frame() {
     g_entries.extra    = gtk_entry_new_with_buffer(extra_buf);
     GtkWidget *extra_label     = gtk_label_new("Extra Info: ");
 
-    g_entries.photoloc = gtk_file_chooser_button_new(g_contact.photoloc, GTK_FILE_CHOOSER_ACTION_OPEN);
+    g_entries.photoloc = gtk_file_chooser_button_new("Photo Location", GTK_FILE_CHOOSER_ACTION_OPEN);
+    if (strcmp(g_contact.photoloc, "") == 0) {
+        gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(g_entries.photoloc), g_contact.photoloc);
+    }
+    else {
+        g_entries.photoloc = gtk_file_chooser_button_new(g_contact.photoloc, GTK_FILE_CHOOSER_ACTION_OPEN);
+        gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(g_entries.photoloc), g_get_home_dir());
+    }
     GtkWidget *photoloc_label  = gtk_label_new("Photo: ");
-    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(g_contact.photoloc), g_get_home_dir());
     g_signal_connect(g_entries.photoloc, "file-set", G_CALLBACK(on_file_select), &g_contact.photoloc);
 
     GtkWidget *save_button = gtk_button_new_with_label("Save");
@@ -290,8 +310,9 @@ static void set_up_photo(GtkWidget *photo) {
     photo = gtk_image_new_from_pixbuf(scaled_buf);
 }
 
-static void switch_to_view_contact_frame(GtkTreeSelection *selection, GtkWidget *nu) {
+static void switch_to_view_contact_frame(GtkTreeSelection *selection) {
     remove_child_from(g_view_frame);
+    alloc_frame_size();
 
     GtkTreeIter iter;
     GtkTreeModel *model;
@@ -415,6 +436,7 @@ static void on_file_select(GtkFileChooserButton *button, gpointer data) {
 }
 
 static void switch_to_new_contact_frame() {
+    alloc_frame_size();
     remove_child_from(g_view_frame);
 
     g_contact.name = "";
@@ -514,120 +536,108 @@ static void open_backup_dialog() {
     gtk_widget_destroy(dialog);
 }
 
-static void main_window(GtkApplication *app) {
-    //Prevents a segfault if the user presses "Delete Contact" in the edit menu
-    //before selecting one.
-    g_contact.id = "0";
+static void setup_title_bar(GtkWidget *main_grid) {
+    GtkWidget *menu_bar = gtk_menu_bar_new();
+    GtkWidget *file_item = gtk_menu_item_new_with_label("File");
+    GtkWidget *edit_item = gtk_menu_item_new_with_label("Edit");
+    GtkWidget *help_item = gtk_menu_item_new_with_label("Help");
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), file_item);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), edit_item);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), help_item);
 
-    //g_win;
-        GtkWidget *main_box;
-            GtkWidget *menu_bar;
-                GtkWidget *file_menu;
-                    GtkWidget *file_menu_item;
-                    GtkWidget *new_contact_item;
-                    GtkWidget *backup_item;
-                GtkWidget *edit_menu;
-                    GtkWidget *edit_menu_item;
-                    GtkWidget *edit_contact_item;
-                    GtkWidget *delete_contact_item;
-                GtkWidget *help_menu_item;
-            GtkWidget *main_grid;
-                GtkWidget *new_box;
-                    GtkWidget *new_contact_button;
-                    GtkWidget *refresh_button;
-                        GtkWidget *refresh_icon;
-                GtkWidget *list_frame;
-                    GtkWidget *list_grid;
-                        GtkWidget *search_entry;
-                        GtkWidget *scrolled_list_frame;
-                            //g_list_view;
-                        GtkTreeSelection *list_selection;
-
-    file_menu_item = gtk_menu_item_new_with_label("File");
-    file_menu = gtk_menu_new();
-    new_contact_item = gtk_menu_item_new_with_label("New Contact");
-    backup_item = gtk_menu_item_new_with_label("Backup Contacts");
-    g_view_frame = gtk_frame_new("View");
-    gtk_menu_item_set_submenu(GTK_MENU_ITEM(file_menu_item), file_menu);
+    GtkWidget *file_menu = gtk_menu_new();
+    GtkWidget *backup_item = gtk_menu_item_new_with_label("Backup Contacts");
+    gtk_menu_item_set_submenu(GTK_MENU_ITEM(file_item), file_menu);
     gtk_menu_shell_append(GTK_MENU_SHELL(file_menu), backup_item);
-    g_signal_connect(backup_item, "activate", G_CALLBACK(open_backup_dialog), NULL);
 
-    edit_menu = gtk_menu_new();
-    edit_menu_item = gtk_menu_item_new_with_label("Edit");
-    edit_contact_item = gtk_menu_item_new_with_label("Edit Contact");
-    delete_contact_item = gtk_menu_item_new_with_label("Delete Contact");
-    gtk_menu_item_set_submenu(GTK_MENU_ITEM(edit_menu_item), edit_menu);
+    GtkWidget *edit_menu = gtk_menu_new();
+    GtkWidget *new_contact_item = gtk_menu_item_new_with_label("New Contact");
+    GtkWidget *edit_contact_item = gtk_menu_item_new_with_label("Edit Contact");
+    GtkWidget *delete_contact_item = gtk_menu_item_new_with_label("Delete Contact");
+    gtk_menu_item_set_submenu(GTK_MENU_ITEM(edit_item), edit_menu);
     gtk_menu_shell_append(GTK_MENU_SHELL(edit_menu), new_contact_item);
     gtk_menu_shell_append(GTK_MENU_SHELL(edit_menu), edit_contact_item);
     gtk_menu_shell_append(GTK_MENU_SHELL(edit_menu), delete_contact_item);
+
+    gtk_widget_set_hexpand(GTK_WIDGET(menu_bar), TRUE);
+    gtk_grid_attach(GTK_GRID(main_grid), menu_bar, 0, 0, 2, 1);
+
+    g_signal_connect(backup_item, "activate", G_CALLBACK(open_backup_dialog), NULL);
     g_signal_connect(new_contact_item, "activate", G_CALLBACK(switch_to_new_contact_frame), NULL);
     g_signal_connect(edit_contact_item, "activate", G_CALLBACK(switch_to_edit_contact_frame), NULL);
     g_signal_connect(delete_contact_item, "activate", G_CALLBACK(gui_delete_contact), NULL);
+    g_signal_connect(help_item, "activate", G_CALLBACK(help_open_window), NULL);
+}
 
-    help_menu_item = gtk_menu_item_new_with_label("Help");
-    g_signal_connect(help_menu_item, "activate", G_CALLBACK(help_open_window), NULL);
+static void setup_action_box(GtkWidget *main_grid) {
+    GtkWidget *action_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    GtkWidget *new_contact_button = gtk_button_new_with_label("+");
+    GtkWidget *edit_contact_button = gtk_button_new_with_label("/");
+    GtkWidget *delete_contact_button = gtk_button_new_with_label("-");
+    gtk_box_pack_start(GTK_BOX(action_box), new_contact_button, FALSE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(action_box), edit_contact_button, FALSE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(action_box), delete_contact_button, FALSE, TRUE, 0);
 
-    menu_bar = gtk_menu_bar_new();
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), file_menu_item);
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), edit_menu_item);
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), help_menu_item);
+    gtk_grid_attach(GTK_GRID(main_grid), action_box, 0, 1, 2, 1);
 
-    new_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    new_contact_button = gtk_button_new_with_label("+");
-    gtk_widget_set_hexpand(new_box, TRUE);
-    gtk_box_pack_start(GTK_BOX(new_box), new_contact_button, FALSE, FALSE, 0);
-
-    search_entry = gtk_search_entry_new();
+    g_signal_connect(new_contact_button, "clicked", G_CALLBACK(switch_to_new_contact_frame), NULL);
+    g_signal_connect(edit_contact_button, "clicked", G_CALLBACK(switch_to_edit_contact_frame), NULL);
+    g_signal_connect(delete_contact_button, "clicked", G_CALLBACK(gui_delete_contact), NULL);
+}
+ 
+static void setup_list_frame(GtkWidget *main_grid) {
     g_list_view.view = list_create_view();
-    g_signal_connect(search_entry, "search-changed", G_CALLBACK(search_callback), g_list_view.view);
+    GtkWidget *list_scroller = gtk_scrolled_window_new(NULL, NULL);
+    gtk_container_add(GTK_CONTAINER(list_scroller), g_list_view.view);
+    gtk_widget_set_hexpand(list_scroller, TRUE);
+    gtk_widget_set_vexpand(list_scroller, TRUE);
 
-    g_signal_connect(new_contact_button, "clicked", G_CALLBACK(switch_to_new_contact_frame), g_view_frame);
+    GtkWidget *list_grid = gtk_grid_new();
+    GtkWidget *search_entry = gtk_search_entry_new();
+    GtkWidget *refresh_button = gtk_button_new_from_icon_name("view-refresh-symbolic",
+            GTK_ICON_SIZE_BUTTON);
+    gtk_widget_set_hexpand(search_entry, TRUE);
+    gtk_grid_attach(GTK_GRID(list_grid), search_entry, 0, 0, 1, 1);
+    gtk_grid_attach(GTK_GRID(list_grid), refresh_button, 1, 0, 1, 1);
+    gtk_grid_attach(GTK_GRID(list_grid), list_scroller, 0, 1, 2, 2);
 
-    refresh_button = gtk_button_new();
-    refresh_icon = gtk_image_new_from_icon_name("view-refresh-symbolic", GTK_ICON_SIZE_BUTTON);
-    gtk_button_set_image(GTK_BUTTON(refresh_button), refresh_icon);
-    g_signal_connect(refresh_button, "clicked", G_CALLBACK(list_refresh), NULL);
+    GtkWidget *list_frame = gtk_frame_new("List");
+    gtk_container_add(GTK_CONTAINER(list_frame), list_grid);
 
-    list_frame = gtk_frame_new("List");
     gtk_widget_set_hexpand(list_frame, TRUE);
     gtk_widget_set_vexpand(list_frame, TRUE);
-    gtk_frame_set_label_align(GTK_FRAME(list_frame), 0.5, 1.0);
+    gtk_frame_set_label_align(GTK_FRAME(list_frame), 0.5, 0);
+    gtk_grid_attach(GTK_GRID(main_grid), list_frame, 0, 2, 1, 1);
 
-    scrolled_list_frame = gtk_scrolled_window_new(NULL, NULL);
-    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_list_frame), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-    gtk_widget_set_vexpand(scrolled_list_frame, TRUE);
-    gtk_widget_set_hexpand(refresh_button, FALSE);
-    gtk_widget_set_hexpand(search_entry, TRUE);
+    g_signal_connect(search_entry, "search-changed", G_CALLBACK(search_callback), NULL);
+    g_signal_connect(refresh_button, "clicked", G_CALLBACK(list_refresh), NULL);
 
-    list_selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(g_list_view.view));
-    gtk_tree_selection_set_mode(GTK_TREE_SELECTION(list_selection), GTK_SELECTION_SINGLE);
+    GtkTreeSelection *list_selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(g_list_view.view));
     g_signal_connect(list_selection, "changed", G_CALLBACK(switch_to_view_contact_frame), NULL);
+}
 
+static void setup_view_frame(GtkWidget *main_grid) {
+    g_view_frame = gtk_frame_new("View");
+    gtk_frame_set_label_align(GTK_FRAME(g_view_frame), 0.5, 0);
     gtk_widget_set_hexpand(g_view_frame, TRUE);
     gtk_widget_set_vexpand(g_view_frame, TRUE);
-    gtk_frame_set_label_align(GTK_FRAME(g_view_frame), 0.5, 1.0);
+    gtk_grid_attach(GTK_GRID(main_grid), g_view_frame, 1, 2, 1, 1);
+}
 
-    list_grid = gtk_grid_new();
-    gtk_grid_attach(GTK_GRID(list_grid), search_entry           , 0, 0, 1, 1);
-    gtk_grid_attach(GTK_GRID(list_grid), refresh_button         , 1, 0, 1, 1);
-    gtk_grid_attach(GTK_GRID(list_grid), scrolled_list_frame    , 0, 1, 2, 1);
-    gtk_container_add(GTK_CONTAINER(list_frame), list_grid);
-    gtk_container_add(GTK_CONTAINER(scrolled_list_frame), g_list_view.view);
+static void setup_main_window(GtkApplication *app) {
+    GtkWidget *main_grid = gtk_grid_new();
 
-    main_grid = gtk_grid_new();
-    gtk_grid_attach(GTK_GRID(main_grid), new_box,           0, 0, 1, 1);
-    gtk_grid_attach(GTK_GRID(main_grid), list_frame,        0, 1, 1, 1);
-    gtk_grid_attach(GTK_GRID(main_grid), g_view_frame,        1, 1, 1, 1);
-
-    main_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-    gtk_container_add(GTK_CONTAINER(main_box), menu_bar);
-
-    gtk_container_add(GTK_CONTAINER(main_box), main_grid);
+    setup_title_bar(main_grid);
+    setup_action_box(main_grid);
+    setup_list_frame(main_grid);
+    setup_view_frame(main_grid);
 
     g_win = gtk_application_window_new(app);
-    gtk_container_add(GTK_CONTAINER(g_win), main_box);
+    gtk_container_add(GTK_CONTAINER(g_win), main_grid);
     gtk_window_set_default_size(GTK_WINDOW(g_win), WINDOW_WIDTH, WINDOW_HEIGHT);
     gtk_widget_show_all(g_win);
+
+    alloc_frame_size();
 }
 
 int gui_init(int argc, char **argv) {
@@ -636,7 +646,7 @@ int gui_init(int argc, char **argv) {
     GtkApplication *app;
     int status;
     app = gtk_application_new("com.com.com", G_APPLICATION_DEFAULT_FLAGS);
-    g_signal_connect(app, "activate", G_CALLBACK(main_window), NULL);
+    g_signal_connect(app, "activate", G_CALLBACK(setup_main_window), NULL);
     status = g_application_run(G_APPLICATION(app), argc, argv);
     g_object_unref(app);
 
