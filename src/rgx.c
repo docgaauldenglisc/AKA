@@ -13,6 +13,7 @@
 #define BAD 1
 
 bool string_is_empty(char *str);
+int rgx_check_website(char *website);
 int rgx_check_filename(char *filename);
 int rgc_check_name(char *name);
 int rgx_check_phone(char *phone);
@@ -41,6 +42,19 @@ bool match_str(const char *str, const char *pattern) {
     else {
         pcre_free(re);
         return false;
+    }
+}
+
+int rgx_check_website(char *website) {
+    if (string_is_empty(website)) {
+        return GOOD;
+    }
+    const char *pattern = "^[\\w]+\\.[\\w]{3,}(|\\.[\\w]{2})$";
+    if (match_str(website, pattern)) {
+        return GOOD;
+    }
+    else {
+        return BAD;
     }
 }
 

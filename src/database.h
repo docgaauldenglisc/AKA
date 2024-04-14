@@ -9,6 +9,7 @@ typedef struct {
     char *email;
     char *org;
     char *address;
+    char *website;
     char *extra;
     char *photoloc;
 } ContactText;

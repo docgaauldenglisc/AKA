@@ -40,7 +40,8 @@ enum {
     CONTACT_PHONE_BAD,
     CONTACT_EMAIL_BAD,
     CONTACT_ADDRESS_BAD,
-    CONTACT_NAME_BAD
+    CONTACT_NAME_BAD,
+    CONTACT_WEBSITE_BAD,
 };
 
 enum {
@@ -137,7 +138,6 @@ static GtkTreeModel *list_create_model() {
 static GtkWidget *list_create_view() {
     GtkWidget *view = gtk_tree_view_new();
     GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
-    gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "ID"           , renderer, "text", COL_ID, NULL);
     gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Name"         , renderer, "text", COL_NAME, NULL);
     gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Title"        , renderer, "text", COL_TITLE, NULL);
     gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Phone Number" , renderer, "text", COL_PHONE, NULL);
@@ -197,6 +197,14 @@ static void search_callback(GtkWidget *search_entry) {
         gtk_tree_store_append(GTK_TREE_STORE(store), &iter, NULL);
         gtk_tree_store_set(store, &iter, COL_ID, id, COL_NAME, name, COL_TITLE, title, COL_PHONE,
                 phone, COL_EMAIL, email, COL_ORG, org, COL_ADDRESS, address, -1);
+
+        free(id);
+        free(name);
+        free(title);
+        free(phone);
+        free(email);
+        free(org);
+        free(address);
     }
     GtkTreeModel *model = GTK_TREE_MODEL(store);
 
@@ -236,6 +244,7 @@ static void gui_save_contact() {
     g_contact.email     = (char *)gtk_entry_get_text(GTK_ENTRY(g_entries.email));
     g_contact.org       = (char *)gtk_entry_get_text(GTK_ENTRY(g_entries.org));
     g_contact.address   = (char *)gtk_entry_get_text(GTK_ENTRY(g_entries.address));
+    g_contact.website   = (char *)gtk_entry_get_text(GTK_ENTRY(g_entries.website));
     g_contact.extra     = (char *)gtk_entry_get_text(GTK_ENTRY(g_entries.extra));
 
     switch (db_save_contact(&g_contact)) {
@@ -255,6 +264,9 @@ static void gui_save_contact() {
     case CONTACT_NAME_BAD:
         gui_send_error("Name not valid");
         break;
+    case CONTACT_WEBSITE_BAD:
+        gui_send_error("Website not valid");
+        break;
     }
 }
 
@@ -265,6 +277,7 @@ static void gui_edit_contact() {
     g_contact.email     = (char *)gtk_entry_get_text(GTK_ENTRY(g_entries.email));
     g_contact.org       = (char *)gtk_entry_get_text(GTK_ENTRY(g_entries.org));
     g_contact.address   = (char *)gtk_entry_get_text(GTK_ENTRY(g_entries.address));
+    g_contact.website   = (char *)gtk_entry_get_text(GTK_ENTRY(g_entries.website));
     g_contact.extra     = (char *)gtk_entry_get_text(GTK_ENTRY(g_entries.extra));
 
     switch (db_edit_contact(&g_contact)) {
@@ -284,6 +297,9 @@ static void gui_edit_contact() {
     case CONTACT_NAME_BAD:
         gui_send_error("Name not valid");
         break;
+    case CONTACT_WEBSITE_BAD:
+        gui_send_error("Website not valid");
+        break;
     }
 }
 
@@ -294,33 +310,37 @@ static void switch_to_edit_contact_frame() {
     }
     remove_child_from(g_view_frame);
 
-    GtkEntryBuffer *name_buf        = gtk_entry_buffer_new(g_contact.name, strlen(g_contact.name));
-    g_entries.name     = gtk_entry_new_with_buffer(name_buf);
-    GtkWidget *name_label      = gtk_label_new("Name: ");
+    GtkEntryBuffer *name_buf    = gtk_entry_buffer_new(g_contact.name, strlen(g_contact.name));
+    g_entries.name              = gtk_entry_new_with_buffer(name_buf);
+    GtkWidget *name_label       = gtk_label_new("Name: ");
 
-    GtkEntryBuffer *title_buf       = gtk_entry_buffer_new(g_contact.title, strlen(g_contact.title));
-    g_entries.title    = gtk_entry_new_with_buffer(title_buf);
-    GtkWidget *title_label     = gtk_label_new("Title: ");
+    GtkEntryBuffer *title_buf   = gtk_entry_buffer_new(g_contact.title, strlen(g_contact.title));
+    g_entries.title             = gtk_entry_new_with_buffer(title_buf);
+    GtkWidget *title_label      = gtk_label_new("Title: ");
 
-    GtkEntryBuffer *phone_buf       = gtk_entry_buffer_new(g_contact.phone, strlen(g_contact.phone));
-    g_entries.phone    = gtk_entry_new_with_buffer(phone_buf);
-    GtkWidget *phone_label     = gtk_label_new("Phone Number: ");
+    GtkEntryBuffer *phone_buf   = gtk_entry_buffer_new(g_contact.phone, strlen(g_contact.phone));
+    g_entries.phone             = gtk_entry_new_with_buffer(phone_buf);
+    GtkWidget *phone_label      = gtk_label_new("Phone Number: ");
     
-    GtkEntryBuffer *email_buf       = gtk_entry_buffer_new(g_contact.email, strlen(g_contact.email));
-    g_entries.email    = gtk_entry_new_with_buffer(email_buf);
-    GtkWidget *email_label     = gtk_label_new("Email: ");
+    GtkEntryBuffer *email_buf   = gtk_entry_buffer_new(g_contact.email, strlen(g_contact.email));
+    g_entries.email             = gtk_entry_new_with_buffer(email_buf);
+    GtkWidget *email_label      = gtk_label_new("Email: ");
 
-    GtkEntryBuffer *org_buf         = gtk_entry_buffer_new(g_contact.org, strlen(g_contact.org));
-    g_entries.org      = gtk_entry_new_with_buffer(org_buf);
-    GtkWidget *org_label       = gtk_label_new("Organization: ");
+    GtkEntryBuffer *org_buf     = gtk_entry_buffer_new(g_contact.org, strlen(g_contact.org));
+    g_entries.org               = gtk_entry_new_with_buffer(org_buf);
+    GtkWidget *org_label        = gtk_label_new("Organization: ");
     
-    GtkEntryBuffer *address_buf     = gtk_entry_buffer_new(g_contact.address, strlen(g_contact.address));
-    g_entries.address  = gtk_entry_new_with_buffer(address_buf);
-    GtkWidget *address_label   = gtk_label_new("Address: ");
+    GtkEntryBuffer *address_buf = gtk_entry_buffer_new(g_contact.address, strlen(g_contact.address));
+    g_entries.address           = gtk_entry_new_with_buffer(address_buf);
+    GtkWidget *address_label    = gtk_label_new("Address: ");
 
-    GtkEntryBuffer *extra_buf       = gtk_entry_buffer_new(g_contact.address, strlen(g_contact.extra));
-    g_entries.extra    = gtk_entry_new_with_buffer(extra_buf);
-    GtkWidget *extra_label     = gtk_label_new("Extra Info: ");
+    GtkEntryBuffer *website_buf = gtk_entry_buffer_new(g_contact.website, strlen(g_contact.website));
+    g_entries.website           = gtk_entry_new_with_buffer(website_buf);
+    GtkWidget *website_label    = gtk_label_new("Website: ");
+
+    GtkEntryBuffer *extra_buf   = gtk_entry_buffer_new(g_contact.address, strlen(g_contact.extra));
+    g_entries.extra             = gtk_entry_new_with_buffer(extra_buf);
+    GtkWidget *extra_label      = gtk_label_new("Extra Info: ");
 
     g_entries.photoloc = gtk_file_chooser_button_new("Photo Location", GTK_FILE_CHOOSER_ACTION_OPEN);
     if (strcmp(g_contact.photoloc, "") == 0) {
@@ -349,11 +369,13 @@ static void switch_to_edit_contact_frame() {
     gtk_grid_attach(GTK_GRID(edit_contact_grid), g_entries.org,         1, 5, 1, 1);
     gtk_grid_attach(GTK_GRID(edit_contact_grid), address_label,         0, 6, 1, 1);
     gtk_grid_attach(GTK_GRID(edit_contact_grid), g_entries.address,     1, 6, 1, 1);
-    gtk_grid_attach(GTK_GRID(edit_contact_grid), extra_label,           0, 7, 1, 1);
-    gtk_grid_attach(GTK_GRID(edit_contact_grid), g_entries.extra,       1, 7, 1, 1);
-    gtk_grid_attach(GTK_GRID(edit_contact_grid), photoloc_label,        0, 8, 1, 1);
-    gtk_grid_attach(GTK_GRID(edit_contact_grid), g_entries.photoloc,    1, 8, 1, 1);
-    gtk_grid_attach(GTK_GRID(edit_contact_grid), save_button,           2, 9, 1, 1);
+    gtk_grid_attach(GTK_GRID(edit_contact_grid), website_label,         0, 7, 1, 1);
+    gtk_grid_attach(GTK_GRID(edit_contact_grid), g_entries.website,     1, 7, 1, 1);
+    gtk_grid_attach(GTK_GRID(edit_contact_grid), extra_label,           0, 8, 1, 1);
+    gtk_grid_attach(GTK_GRID(edit_contact_grid), g_entries.extra,       1, 8, 1, 1);
+    gtk_grid_attach(GTK_GRID(edit_contact_grid), photoloc_label,        0, 9, 1, 1);
+    gtk_grid_attach(GTK_GRID(edit_contact_grid), g_entries.photoloc,    1, 9, 1, 1);
+    gtk_grid_attach(GTK_GRID(edit_contact_grid), save_button,           2,10, 1, 1);
 
     char *frame_str = malloc(sizeof(char) * 20);
     snprintf(frame_str, 20, "Edit %s", g_contact.name);
@@ -361,6 +383,8 @@ static void switch_to_edit_contact_frame() {
     gtk_frame_set_label(GTK_FRAME(g_view_frame), frame_str);
     gtk_container_add(GTK_CONTAINER(g_view_frame), edit_contact_grid);
     gtk_widget_show_all(g_view_frame);
+
+    free(frame_str);
 }
 
 static void switch_to_view_contact_frame(GtkTreeSelection *selection) {
@@ -380,7 +404,8 @@ static void switch_to_view_contact_frame(GtkTreeSelection *selection) {
         gtk_tree_model_get(model, &iter, COL_EMAIL  , &g_contact.email      , -1);
         gtk_tree_model_get(model, &iter, COL_ORG    , &g_contact.org        , -1);
         gtk_tree_model_get(model, &iter, COL_ADDRESS, &g_contact.address    , -1);
-        //Get extra from database because it isn't listed
+        //Get extra and website from database because they aren't listed
+        g_contact.website = db_get("WEBSITE", atoi(g_contact.id));
         g_contact.extra = db_get("EXTRA", atoi(g_contact.id));
 
         gtk_frame_set_label(GTK_FRAME(g_view_frame), g_contact.name);
@@ -404,6 +429,8 @@ static void switch_to_view_contact_frame(GtkTreeSelection *selection) {
         gtk_widget_set_hexpand(org_label, TRUE);
         GtkWidget *address_label    = gtk_label_new("Address: ");
         gtk_widget_set_hexpand(address_label, TRUE);
+        GtkWidget *website_label    = gtk_label_new("Website: ");
+        gtk_widget_set_hexpand(website_label, TRUE);
         GtkWidget *extra_label      = gtk_label_new("Extra Info: ");
         gtk_widget_set_hexpand(extra_label, TRUE);
 
@@ -422,6 +449,8 @@ static void switch_to_view_contact_frame(GtkTreeSelection *selection) {
         gtk_widget_set_hexpand(c_labels.org, TRUE);
         c_labels.address = gtk_label_new(g_contact.address);
         gtk_widget_set_hexpand(c_labels.address, TRUE);
+        c_labels.website = gtk_label_new(g_contact.address);
+        gtk_widget_set_hexpand(c_labels.website, TRUE);
         c_labels.extra = gtk_label_new(g_contact.extra);
         gtk_widget_set_hexpand(c_labels.extra, TRUE);
         edit_button = gtk_button_new_with_label("Edit");
@@ -437,16 +466,18 @@ static void switch_to_view_contact_frame(GtkTreeSelection *selection) {
         gtk_grid_attach(GTK_GRID(grid), email_label             , 1, 4, 1, 1);
         gtk_grid_attach(GTK_GRID(grid), org_label               , 1, 5, 1, 1);
         gtk_grid_attach(GTK_GRID(grid), address_label           , 1, 6, 1, 1);
-        gtk_grid_attach(GTK_GRID(grid), extra_label             , 1, 7, 1, 1);
+        gtk_grid_attach(GTK_GRID(grid), website_label           , 1, 7, 1, 1);
+        gtk_grid_attach(GTK_GRID(grid), extra_label             , 1, 8, 1, 1);
         gtk_grid_attach(GTK_GRID(grid), c_labels.name           , 2, 1, 1, 1);
         gtk_grid_attach(GTK_GRID(grid), c_labels.title          , 2, 2, 1, 1);
         gtk_grid_attach(GTK_GRID(grid), c_labels.phone          , 2, 3, 1, 1);
         gtk_grid_attach(GTK_GRID(grid), c_labels.email          , 2, 4, 1, 1);
         gtk_grid_attach(GTK_GRID(grid), c_labels.org            , 2, 5, 1, 1);
         gtk_grid_attach(GTK_GRID(grid), c_labels.address        , 2, 6, 1, 1);
-        gtk_grid_attach(GTK_GRID(grid), c_labels.extra          , 2, 7, 1, 1);
-        gtk_grid_attach(GTK_GRID(grid), edit_button             , 1, 8, 1, 1);
-        gtk_grid_attach(GTK_GRID(grid), delete_button           , 2, 8, 1, 1);
+        gtk_grid_attach(GTK_GRID(grid), c_labels.website        , 2, 7, 1, 1);
+        gtk_grid_attach(GTK_GRID(grid), c_labels.extra          , 2, 8, 1, 1);
+        gtk_grid_attach(GTK_GRID(grid), edit_button             , 1, 9, 1, 1);
+        gtk_grid_attach(GTK_GRID(grid), delete_button           , 2, 9, 1, 1);
 
         gtk_container_add(GTK_CONTAINER(g_view_frame), grid);
         gtk_widget_show_all(g_view_frame);
@@ -463,6 +494,7 @@ static void switch_to_new_contact_frame() {
     g_contact.email = "";
     g_contact.org = "";
     g_contact.address = "";
+    g_contact.website = "";
     g_contact.extra = "";
     g_contact.photoloc = "";
 
@@ -473,6 +505,7 @@ static void switch_to_new_contact_frame() {
         GtkWidget *email_label;
         GtkWidget *org_label;
         GtkWidget *address_label;
+        GtkWidget *website_label;
         GtkWidget *extra_label;
         GtkWidget *photoloc_label;
         GtkWidget *save_button;
@@ -494,6 +527,9 @@ static void switch_to_new_contact_frame() {
     
     g_entries.address  = gtk_entry_new();
     address_label   = gtk_label_new("Address: ");
+
+    g_entries.website = gtk_entry_new();
+    website_label   = gtk_label_new("Website: ");
 
     g_entries.extra    = gtk_entry_new();
     extra_label     = gtk_label_new("Extra Info: ");
@@ -519,11 +555,13 @@ static void switch_to_new_contact_frame() {
     gtk_grid_attach(GTK_GRID(new_contact_grid), g_entries.org,      1, 5, 1, 1);
     gtk_grid_attach(GTK_GRID(new_contact_grid), address_label,      0, 6, 1, 1);
     gtk_grid_attach(GTK_GRID(new_contact_grid), g_entries.address,  1, 6, 1, 1);
-    gtk_grid_attach(GTK_GRID(new_contact_grid), extra_label,        0, 7, 1, 1);
-    gtk_grid_attach(GTK_GRID(new_contact_grid), g_entries.extra,    1, 7, 1, 1);
-    gtk_grid_attach(GTK_GRID(new_contact_grid), photoloc_label,     0, 8, 1, 1);
-    gtk_grid_attach(GTK_GRID(new_contact_grid), g_entries.photoloc, 1, 8, 1, 1);
-    gtk_grid_attach(GTK_GRID(new_contact_grid), save_button,        2, 9, 1, 1);
+    gtk_grid_attach(GTK_GRID(new_contact_grid), website_label,      0, 7, 1, 1);
+    gtk_grid_attach(GTK_GRID(new_contact_grid), g_entries.website,  1, 7, 1, 1);
+    gtk_grid_attach(GTK_GRID(new_contact_grid), extra_label,        0, 8, 1, 1);
+    gtk_grid_attach(GTK_GRID(new_contact_grid), g_entries.extra,    1, 8, 1, 1);
+    gtk_grid_attach(GTK_GRID(new_contact_grid), photoloc_label,     0, 9, 1, 1);
+    gtk_grid_attach(GTK_GRID(new_contact_grid), g_entries.photoloc, 1, 9, 1, 1);
+    gtk_grid_attach(GTK_GRID(new_contact_grid), save_button,        2,10, 1, 1);
 
     gtk_frame_set_label(GTK_FRAME(g_view_frame), "New Contact");
     gtk_container_add(GTK_CONTAINER(g_view_frame), new_contact_grid);

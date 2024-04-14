@@ -11,6 +11,7 @@ typedef struct {
     GtkWidget *email;
     GtkWidget *org;
     GtkWidget *address;
+    GtkWidget *website;
     GtkWidget *extra;
     GtkWidget *photoloc;
 } ContactWidgets;

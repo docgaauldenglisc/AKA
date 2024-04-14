@@ -109,6 +109,7 @@ int db_backup_at(char *filename) {
                                   "EMAIL TEXT, " \ 
                                   "ORG TEXT, " \
                                   "ADDRESS TEXT, " \
+                                  "WEBSITE TEXT, " \
                                   "EXTRA TEXT, " \
                                   "PHOTOLOC TEXT " \
                                   ");";
@@ -228,6 +229,9 @@ int db_edit_contact(ContactText *con) {
     if (rgx_check_name(con->name) == 1) {
         return 4;
     }
+    if (rgx_check_website(con->website) == 1) {
+        return 4;
+    }
 
     sqlite3 *db;
     sqlite3_open(g_file_that_is_open, &db);
@@ -240,6 +244,7 @@ int db_edit_contact(ContactText *con) {
                                "EMAIL = ?, " \
                                "ORG = ?, " \
                                "ADDRESS = ?, " \
+                               "WEBSITE = ?, " \
                                "EXTRA = ?, " \
                                "PHOTOLOC = ? " \
                                "WHERE ID = ?;";
@@ -247,15 +252,16 @@ int db_edit_contact(ContactText *con) {
     sqlite3_prepare_v2(db, edit_contact_query, -1, &edit_contact_stmt, NULL);
 
     sqlite3_bind_int( edit_contact_stmt,   1, atoi(con->id));
-    sqlite3_bind_text(edit_contact_stmt,   2, con->name      , -1, SQLITE_STATIC);
-    sqlite3_bind_text(edit_contact_stmt,   3, con->title     , -1, SQLITE_STATIC);
-    sqlite3_bind_text(edit_contact_stmt,   4, con->phone     , -1, SQLITE_STATIC);
-    sqlite3_bind_text(edit_contact_stmt,   5, con->email     , -1, SQLITE_STATIC);
-    sqlite3_bind_text(edit_contact_stmt,   6, con->org       , -1, SQLITE_STATIC);
-    sqlite3_bind_text(edit_contact_stmt,   7, con->address   , -1, SQLITE_STATIC);
-    sqlite3_bind_text(edit_contact_stmt,   8, con->extra     , -1, SQLITE_STATIC);
-    sqlite3_bind_text(edit_contact_stmt,   9, con->photoloc  , -1, SQLITE_STATIC);
-    sqlite3_bind_int( edit_contact_stmt,  10, atoi(con->id));
+    sqlite3_bind_text(edit_contact_stmt,   2, con->name     , -1, SQLITE_STATIC);
+    sqlite3_bind_text(edit_contact_stmt,   3, con->title    , -1, SQLITE_STATIC);
+    sqlite3_bind_text(edit_contact_stmt,   4, con->phone    , -1, SQLITE_STATIC);
+    sqlite3_bind_text(edit_contact_stmt,   5, con->email    , -1, SQLITE_STATIC);
+    sqlite3_bind_text(edit_contact_stmt,   6, con->org      , -1, SQLITE_STATIC);
+    sqlite3_bind_text(edit_contact_stmt,   7, con->address  , -1, SQLITE_STATIC);
+    sqlite3_bind_text(edit_contact_stmt,   8, con->website  , -1, SQLITE_STATIC);
+    sqlite3_bind_text(edit_contact_stmt,   9, con->extra    , -1, SQLITE_STATIC);
+    sqlite3_bind_text(edit_contact_stmt,  10, con->photoloc , -1, SQLITE_STATIC);
+    sqlite3_bind_int( edit_contact_stmt,  11, atoi(con->id));
 
     sqlite3_step(edit_contact_stmt);
 
@@ -282,6 +288,9 @@ int db_save_contact(ContactText *con) {
     if (rgx_check_name(con->name) == 1) {
         return 4;
     }
+    if (rgx_check_website(con->website) == 1) {
+        return 5;
+    }
 
     rc = sqlite3_open(g_file_that_is_open, &db);
     if (rc) {
@@ -297,9 +306,11 @@ int db_save_contact(ContactText *con) {
                              "EMAIL," \
                              "ORG," \
                              "ADDRESS," \
+                             "WEBSITE," \
                              "EXTRA," \
                              "PHOTOLOC) " \
                              "VALUES(" \
+                             "?," \
                              "?," \
                              "?," \
                              "?," \
@@ -318,8 +329,9 @@ int db_save_contact(ContactText *con) {
     sqlite3_bind_text(make_new_contact,   5, con->email     , -1, SQLITE_STATIC);
     sqlite3_bind_text(make_new_contact,   6, con->org       , -1, SQLITE_STATIC);
     sqlite3_bind_text(make_new_contact,   7, con->address   , -1, SQLITE_STATIC);
-    sqlite3_bind_text(make_new_contact,   8, con->extra     , -1, SQLITE_STATIC);
-    sqlite3_bind_text(make_new_contact,   9, con->photoloc  , -1, SQLITE_STATIC);
+    sqlite3_bind_text(make_new_contact,   8, con->website   , -1, SQLITE_STATIC);
+    sqlite3_bind_text(make_new_contact,   9, con->extra     , -1, SQLITE_STATIC);
+    sqlite3_bind_text(make_new_contact,  10, con->photoloc  , -1, SQLITE_STATIC);
 
     sqlite3_step(make_new_contact);
 
@@ -343,6 +355,7 @@ int db_init() {
                                   "PHONE TEXT, " \
                                   "EMAIL TEXT, " \ 
                                   "ORG TEXT, " \
+                                  "WEBSITE TEXT, " \
                                   "ADDRESS TEXT, " \
                                   "EXTRA TEXT, " \
                                   "PHOTOLOC TEXT " \
