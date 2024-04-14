@@ -1,5 +1,7 @@
+//Libraries
 #include <gtk/gtk.h>
 
+//Local Files
 #include "help.h"
 #include "gui.h"
 
@@ -127,7 +129,7 @@ static void open_guide(char *guide) {
     gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(g_text_view), FALSE);
 }
 
-static void change_guide_to_selection(GtkWidget *selection, gpointer nu) {
+static void change_guide_to_selection(GtkWidget *selection) {
     GtkTreeModel *model;
     GtkTreeIter iter;
     int file_num;

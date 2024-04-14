@@ -1,16 +1,20 @@
+//Standards
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
 
+//Libraries
 #include <pcre.h>
 
-//implements 
+//Local Files
 #include "rgx.h"
 
 #define GOOD 0
 #define BAD 1
 
 bool string_is_empty(char *str);
+int rgx_check_filename(char *filename);
+int rgc_check_name(char *name);
 int rgx_check_phone(char *phone);
 int rgx_check_email(char *email);
 int rgx_check_address(char *address);
@@ -37,6 +41,21 @@ bool match_str(const char *str, const char *pattern) {
     else {
         pcre_free(re);
         return false;
+    }
+}
+
+int rgx_check_filename(char *filename) {
+    //When a file needs to be checked, there can't just not be a file
+    //So if the file name is empty, it returns bad.
+    if (string_is_empty(filename)) {
+        return BAD;
+    }
+    const char *pattern = "^.+\\.db$";
+    if (match_str(filename, pattern)) {
+        return GOOD;
+    }
+    else {
+        return BAD;
     }
 }
 

@@ -1,19 +1,23 @@
+//Standards
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+//Libraries
 #include <sqlite3.h>
 #include <regex.h>
 
-//implements
+//Local Files
 #include "database.h"
-
 #include "rgx.h"
 
 int g_search_count;
 idList g_ids;
+char *g_file_that_is_open;
 
 idList db_search(char *query);
-void db_backup_at(char *filename);
+int db_set_open_file(char *filename);
+int db_backup_at(char *filename);
 void db_delete_contact(int id);
 int db_save_contact(ContactText *con);
 int db_edit_contact(ContactText *con);
@@ -38,9 +42,9 @@ static int search_set_ids(void *data, int argc, char **argv, char **az_col_name)
 
 idList db_search(char *query) {
     sqlite3 *db;
-    sqlite3_open("Contacts.db", &db);
+    sqlite3_open(g_file_that_is_open, &db);
 
-    //Making the pattern "query%" allows for fuzzy searching rather than whole
+    //Making the pattern "query%" allows for fuzzy-ish searching rather than whole
     const char *pattern = sqlite3_mprintf("%s%", query); 
     const char *search_query = "SELECT * FROM Contacts WHERE NAME LIKE ?;";
     sqlite3_stmt *search_stmt;
@@ -63,17 +67,36 @@ idList db_search(char *query) {
     return g_ids;
 }
 
-void db_backup_at(char *filename) {
+int db_set_open_file(char *filename) {
+    if (rgx_check_filename(filename)) {
+        return 1;
+    }
+    unsigned long length = strlen(filename);
+    g_file_that_is_open = malloc(sizeof(char) * length);
+    g_file_that_is_open = strndup(filename, length);
+
+    return 0;
+}
+
+int db_backup_at(char *filename) {
+    //This will return if the filename is empty, 
+    //or if it doesn't end in ".db"
+    if (rgx_check_filename(filename)) {
+        return 1;
+    }
+
     int rc;
     sqlite3 *orig_db;
-    rc = sqlite3_open("Contacts.db", &orig_db);
+    rc = sqlite3_open(g_file_that_is_open, &orig_db);
     if (rc) {
         puts("Couldn't open the original database");
+        return -1;
     }
     sqlite3 *bak_db;
     rc = sqlite3_open(filename, &bak_db);
     if (rc) {
         puts("Couldn't open the backup database");
+        return -1;
     }
 
     const char *database_schema = "CREATE TABLE IF NOT EXISTS contacts (" \
@@ -97,7 +120,6 @@ void db_backup_at(char *filename) {
     sqlite3_prepare_v2(orig_db, attach_db, -1, &bak_stmt, NULL);
     sqlite3_bind_text(bak_stmt, 1, filename, -1, SQLITE_STATIC);
 
-    printf("SQLITE STATEMENT %s\n", sqlite3_expanded_sql(bak_stmt));
     sqlite3_exec(orig_db, sqlite3_expanded_sql(bak_stmt), NULL, 0, &err);
     sqlite3_exec(orig_db, copy_contacts, NULL, 0, &err);
 
@@ -105,11 +127,13 @@ void db_backup_at(char *filename) {
 
     sqlite3_close(orig_db);
     sqlite3_close(bak_db);
+
+    return 0;
 }
 
 void db_delete_contact(int id) {
     sqlite3 *db;
-    sqlite3_open("Contacts.db", &db);
+    sqlite3_open(g_file_that_is_open, &db);
 
     const char *delete_temp = "UPDATE contacts SET NAME = 'del' WHERE id = ?;";
     sqlite3_stmt *delete_stmt;
@@ -141,7 +165,7 @@ static int get_cols(void *data, int argc, char **argv, char **nu) {
 
 char *db_get(char *col, int row) {
     sqlite3 *db;
-    sqlite3_open("Contacts.db", &db);
+    sqlite3_open(g_file_that_is_open, &db);
 
     char *row_str = malloc(sizeof(char) * 10);
     snprintf(row_str, 10, "%i", row);
@@ -177,7 +201,7 @@ static int get_max_id(void *data, int argc, char **argv, char **nu) {
 
 int db_max_id() {
     sqlite3 *db;
-    sqlite3_open("Contacts.db", &db);
+    sqlite3_open(g_file_that_is_open, &db);
 
     int max_id;
     char *err;
@@ -204,7 +228,7 @@ int db_edit_contact(ContactText *con) {
     }
 
     sqlite3 *db;
-    sqlite3_open("Contacts.db", &db);
+    sqlite3_open(g_file_that_is_open, &db);
 
     char *edit_contact_query = "UPDATE contacts SET " \
                                "ID = ?, " \
@@ -257,7 +281,7 @@ int db_save_contact(ContactText *con) {
         return 4;
     }
 
-    rc = sqlite3_open("Contacts.db", &db);
+    rc = sqlite3_open(g_file_that_is_open, &db);
     if (rc) {
         printf("Database couldn't open!\n%s\n", sqlite3_errmsg(db));
         return -1;
@@ -307,7 +331,8 @@ int db_init() {
     sqlite3 *db;
     char *err;
 
-    sqlite3_open("Contacts.db", &db);
+    db_set_open_file("Contacts.db");
+    sqlite3_open(g_file_that_is_open, &db);
 
     const char *database_schema = "CREATE TABLE IF NOT EXISTS contacts (" \
                                   "ID INT PRIMARY KEY NOT NULL, " \ 

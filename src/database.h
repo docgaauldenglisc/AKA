@@ -18,7 +18,8 @@ typedef struct {
     int id_amount;
 } idList;
 
-void db_backup_at(char *filename);
+int db_set_open_file(char *filename);
+int db_backup_at(char *filename);
 void db_delete_contact(int id);
 int db_save_contact(ContactText *con);
 int db_edit_contact(ContactText *con);
