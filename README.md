@@ -46,6 +46,7 @@ are in the **example.db** file.
 
 Below are extra guides that are also available in the pop up,
 after the **Help** menu item is clicked:
+
 [Creating a Contact](#creating-a-contact)
 
 [Editing a Contact](#editing-a-contact)
