@@ -1,0 +1,15 @@
+<span weight='bold' size='xx-large'>Editing a contact</span>
+
+To edit a <b>Contact</b>, select it in the <b>List</b>,
+and then click on the <b>Edit</b> button.
+
+After clicking the <b>Edit</b> button, 
+the <b>Edit Contact View</b> will appear in the <b>Main View</b>,
+and the <b>Contact</b> can be edited in the <b>Entry Bars</b>,
+which have the previous <b>Contact</b> loaded into them.
+
+When you press the <b>Save Button</b> at the bottom of the <b>Main View</b>,
+the current values inside of the <b>Entry Bars</b> will be saved. 
+
+Additionally, to edit a contact, you can click on the <b>Edit</b> Menu,
+and then click the <b>Edit Contact</b> button.

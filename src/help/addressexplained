@@ -1,0 +1,17 @@
+<span weight='bold' size='xx-large'>Address</span>
+
+The <b>Address</b> of a <b>Contact</b> is where they can be found. 
+
+It is not required, but when entered these are <b>Good</b>:
+
+<b>1234 W Direction Ln, City, State, 12345</b>
+<b>1234 W Direction Ln City, State, 12345</b>
+<b>1234 W Direction Ln, City, ST, 12345</b>
+<b>1234 W Direction Ln, City, ST, 12345</b>
+
+And these are <b>Bad</b>:
+
+<b>1234 W Direction Ln City State, 12345</b>
+<b>1234 W Direction Ln City, State</b>
+<b>1234 W Direction Ln City, 12345</b>
+<b>wordwordwordword</b>

@@ -1,0 +1,18 @@
+<span weight='bold' size='xx-large'>Email</span>
+
+The <b>Email</b> of a <b>Contact</b> isn't required for entry,
+but when it is entered, the only certain formats are allowed.
+
+For example, the following are <b>good</b>:
+
+email@email.com
+email@email.com.uk
+email@email.com.au
+email@email.org
+name.last@email.com
+
+And the following are <b>bad</b>:
+
+email@@email.com
+email.com
+email@email.com extra

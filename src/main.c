@@ -1,19 +1,11 @@
+#include <stdlib.h>
 #include <gtk/gtk.h>
-#include <sqlite3.h>
 
-#include "conoptions.h"
-#include "database.h"
-#include "config.h"
 #include "gui.h"
+#include "database.h"
 
+int main(int argc, char **argv) {
+    db_init();
 
-int main (int argc, char *argv[]) {
-    
-    if (check_for_config() == 1) {
-        make_config();
-    }
-
-    verify_db();
-
-    start_gui(argc, argv);
+    gui_init(argc, argv);
 }
