@@ -1,8 +1,11 @@
+//Standards
 #include <stdbool.h>
 #include <string.h>
 
+//Libraries
 #include <gtk/gtk.h>
 
+//Local files
 #include "gui.h"
 #include "help.h"
 #include "database.h"
@@ -15,13 +18,19 @@ static GtkTreeModel *list_create_model();
 static GtkWidget *list_create_view();
 static void list_refresh();
 static void search_callback(GtkWidget *search_entry);
+static bool name_is_del(int i);
+static void set_up_photo(GtkWidget *photo);
 static void on_file_select(GtkFileChooserButton *button, gpointer data);
 static void gui_save_contact();
-static void switch_to_new_contact_frame();
 static void gui_edit_contact();
 static void switch_to_edit_contact_frame();
 static void switch_to_view_contact_frame(GtkTreeSelection *selection);
+static void switch_to_new_contact_frame();
 static void open_backup_dialog();
+static void setup_title_bar(GtkWidget *main_grid);
+static void setup_action_box(GtkWidget *main_grid);
+static void setup_list_frame(GtkWidget *main_grid);
+static void setup_view_frame(GtkWidget *main_grid);
 static void setup_main_window(GtkApplication *app);
 int gui_init(int argc, char **argv);
 
@@ -86,53 +95,6 @@ static void remove_child_from(GtkWidget *container) {
     }
 }
 
-static void search_callback(GtkWidget *search_entry) {
-    char *query = (char*)gtk_entry_buffer_get_text(gtk_entry_get_buffer(GTK_ENTRY(search_entry)));
-    if (query[0] == '\0') {
-        list_refresh();
-        return;
-    }
-
-    idList ids = {.ids = NULL, .id_amount = 0};
-    ids = db_search(query);
-
-    if (gtk_tree_view_get_model(GTK_TREE_VIEW(g_list_view.view)) != NULL) {
-        g_object_unref(gtk_tree_view_get_model(GTK_TREE_VIEW(g_list_view.view)));
-    }
-    remove_child_from(GTK_WIDGET(gtk_tree_view_get_model(GTK_TREE_VIEW(g_list_view.view))));
-
-    GtkTreeIter iter;
-    //this makes eight string columns in the list
-    GtkTreeStore *store = gtk_tree_store_new(NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-                                             G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-                                             G_TYPE_STRING, G_TYPE_STRING);
-    int max = ids.id_amount;
-    for (int i = 0; i < max; i++) {
-        char *id = db_get("ID", ids.ids[i]);
-        char *name = db_get("NAME", ids.ids[i]);
-        char *title = db_get("TITLE", ids.ids[i]);
-        char *phone = db_get("PHONE", ids.ids[i]);
-        char *email = db_get("EMAIL", ids.ids[i]);
-        char *org = db_get("ORG", ids.ids[i]);
-        char *address = db_get("ADDRESS", ids.ids[i]);
-
-        gtk_tree_store_append(GTK_TREE_STORE(store), &iter, NULL);
-        gtk_tree_store_set(store, &iter, COL_ID, id, COL_NAME, name, COL_TITLE, title, COL_PHONE, phone, COL_EMAIL, email, COL_ORG, org, COL_ADDRESS, address, -1);
-    }
-    GtkTreeModel *model = GTK_TREE_MODEL(store);
-
-    gtk_tree_view_set_model(GTK_TREE_VIEW(g_list_view.view), model);
-}
-
-static bool name_is_del(int i) {
-    if (strcmp(db_get("NAME", i), "del") == 0) {
-        return true;
-    }
-    else {
-        return false;
-    }
-}
-
 static GtkTreeModel *list_create_model() {
     int max = db_max_id();
 
@@ -192,6 +154,99 @@ static void list_refresh() {
     alloc_frame_size();
     g_list_view.model = list_create_model();
     gtk_tree_view_set_model(GTK_TREE_VIEW(g_list_view.view), g_list_view.model);
+}
+
+static void search_callback(GtkWidget *search_entry) {
+    char *query = (char*)gtk_entry_buffer_get_text(gtk_entry_get_buffer(GTK_ENTRY(search_entry)));
+    if (query[0] == '\0') {
+        list_refresh();
+        return;
+    }
+
+    idList ids = {.ids = NULL, .id_amount = 0};
+    ids = db_search(query);
+
+    if (gtk_tree_view_get_model(GTK_TREE_VIEW(g_list_view.view)) != NULL) {
+        g_object_unref(gtk_tree_view_get_model(GTK_TREE_VIEW(g_list_view.view)));
+    }
+    remove_child_from(GTK_WIDGET(gtk_tree_view_get_model(GTK_TREE_VIEW(g_list_view.view))));
+
+    GtkTreeIter iter;
+    //this makes eight string columns in the list
+    GtkTreeStore *store = gtk_tree_store_new(NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+                                             G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+                                             G_TYPE_STRING, G_TYPE_STRING);
+    int max = ids.id_amount;
+    for (int i = 0; i < max; i++) {
+        char *id = db_get("ID", ids.ids[i]);
+        char *name = db_get("NAME", ids.ids[i]);
+        char *title = db_get("TITLE", ids.ids[i]);
+        char *phone = db_get("PHONE", ids.ids[i]);
+        char *email = db_get("EMAIL", ids.ids[i]);
+        char *org = db_get("ORG", ids.ids[i]);
+        char *address = db_get("ADDRESS", ids.ids[i]);
+
+        gtk_tree_store_append(GTK_TREE_STORE(store), &iter, NULL);
+        gtk_tree_store_set(store, &iter, COL_ID, id, COL_NAME, name, COL_TITLE, title, COL_PHONE, phone, COL_EMAIL, email, COL_ORG, org, COL_ADDRESS, address, -1);
+    }
+    GtkTreeModel *model = GTK_TREE_MODEL(store);
+
+    gtk_tree_view_set_model(GTK_TREE_VIEW(g_list_view.view), model);
+}
+
+static bool name_is_del(int i) {
+    if (strcmp(db_get("NAME", i), "del") == 0) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+static void set_up_photo(GtkWidget *photo) {
+    GdkPixbuf *buf = gtk_image_get_pixbuf(GTK_IMAGE(photo));
+    int width = gdk_pixbuf_get_width(buf);
+    int height = gdk_pixbuf_get_height(buf);
+    double scale_width = 500.0 / width;
+    double scale_height = 500.0 / height;
+    double scale_factor = MIN(scale_width, scale_height);
+    GdkPixbuf *scaled_buf = gdk_pixbuf_scale_simple(buf, width * scale_factor, height * scale_factor, GDK_INTERP_BILINEAR);
+    photo = gtk_image_new_from_pixbuf(scaled_buf);
+}
+
+static void on_file_select(GtkFileChooserButton *button, gpointer data) {
+    const gchar *path = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(button));
+    gchar **location = (gchar **)data;
+    *location = g_strdup(path);
+}
+
+static void gui_save_contact() {
+    g_contact.name      = (char *)gtk_entry_get_text(GTK_ENTRY(g_entries.name));
+    g_contact.title     = (char *)gtk_entry_get_text(GTK_ENTRY(g_entries.title));
+    g_contact.phone     = (char *)gtk_entry_get_text(GTK_ENTRY(g_entries.phone));
+    g_contact.email     = (char *)gtk_entry_get_text(GTK_ENTRY(g_entries.email));
+    g_contact.org       = (char *)gtk_entry_get_text(GTK_ENTRY(g_entries.org));
+    g_contact.address   = (char *)gtk_entry_get_text(GTK_ENTRY(g_entries.address));
+    g_contact.extra     = (char *)gtk_entry_get_text(GTK_ENTRY(g_entries.extra));
+
+    switch (db_save_contact(&g_contact)) {
+    case CONTACT_GOOD:
+        list_refresh();
+        gtk_frame_set_label(GTK_FRAME(g_view_frame), "View");
+        break;
+    case CONTACT_PHONE_BAD:
+        gui_send_error("Phone number not valid");
+        break;
+    case CONTACT_EMAIL_BAD:
+        gui_send_error("Email Address not valid");
+        break;
+    case CONTACT_ADDRESS_BAD:
+        gui_send_error("Address not valid");
+        break;
+    case CONTACT_NAME_BAD:
+        gui_send_error("Name not valid");
+        break;
+    }
 }
 
 static void gui_edit_contact() {
@@ -299,17 +354,6 @@ static void switch_to_edit_contact_frame() {
     gtk_widget_show_all(g_view_frame);
 }
 
-static void set_up_photo(GtkWidget *photo) {
-    GdkPixbuf *buf = gtk_image_get_pixbuf(GTK_IMAGE(photo));
-    int width = gdk_pixbuf_get_width(buf);
-    int height = gdk_pixbuf_get_height(buf);
-    double scale_width = 500.0 / width;
-    double scale_height = 500.0 / height;
-    double scale_factor = MIN(scale_width, scale_height);
-    GdkPixbuf *scaled_buf = gdk_pixbuf_scale_simple(buf, width * scale_factor, height * scale_factor, GDK_INTERP_BILINEAR);
-    photo = gtk_image_new_from_pixbuf(scaled_buf);
-}
-
 static void switch_to_view_contact_frame(GtkTreeSelection *selection) {
     remove_child_from(g_view_frame);
     alloc_frame_size();
@@ -398,41 +442,6 @@ static void switch_to_view_contact_frame(GtkTreeSelection *selection) {
         gtk_container_add(GTK_CONTAINER(g_view_frame), grid);
         gtk_widget_show_all(g_view_frame);
     }
-}
-
-static void gui_save_contact() {
-    g_contact.name      = (char *)gtk_entry_get_text(GTK_ENTRY(g_entries.name));
-    g_contact.title     = (char *)gtk_entry_get_text(GTK_ENTRY(g_entries.title));
-    g_contact.phone     = (char *)gtk_entry_get_text(GTK_ENTRY(g_entries.phone));
-    g_contact.email     = (char *)gtk_entry_get_text(GTK_ENTRY(g_entries.email));
-    g_contact.org       = (char *)gtk_entry_get_text(GTK_ENTRY(g_entries.org));
-    g_contact.address   = (char *)gtk_entry_get_text(GTK_ENTRY(g_entries.address));
-    g_contact.extra     = (char *)gtk_entry_get_text(GTK_ENTRY(g_entries.extra));
-
-    switch (db_save_contact(&g_contact)) {
-    case CONTACT_GOOD:
-        list_refresh();
-        gtk_frame_set_label(GTK_FRAME(g_view_frame), "View");
-        break;
-    case CONTACT_PHONE_BAD:
-        gui_send_error("Phone number not valid");
-        break;
-    case CONTACT_EMAIL_BAD:
-        gui_send_error("Email Address not valid");
-        break;
-    case CONTACT_ADDRESS_BAD:
-        gui_send_error("Address not valid");
-        break;
-    case CONTACT_NAME_BAD:
-        gui_send_error("Name not valid");
-        break;
-    }
-}
-
-static void on_file_select(GtkFileChooserButton *button, gpointer data) {
-    const gchar *path = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(button));
-    gchar **location = (gchar **)data;
-    *location = g_strdup(path);
 }
 
 static void switch_to_new_contact_frame() {
