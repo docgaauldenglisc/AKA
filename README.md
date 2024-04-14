@@ -39,11 +39,12 @@ And then the binary will be compiled into the **build** directory.
 ## Instructions
 
 This is for the FBLA 2024 Coding and Programming project.
+Please see **fbla/info.md** for more information.
 Partners can be stored as Contacts in this application,
 and the 25 included partners (who have been made up)
-are in the **fbla/example.db** file.
+are in the **example.db** file.
 
-Below are extra guides that are also available in the pop up
+Below are extra guides that are also available in the pop up,
 after the **Help** menu item is clicked:
 [Creating a Contact](#creating-a-contact)
 
