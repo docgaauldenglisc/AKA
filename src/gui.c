@@ -17,6 +17,7 @@ static void remove_child_from(GtkWidget *container);
 static GtkTreeModel *list_create_model();
 static GtkWidget *list_create_view();
 static void list_refresh();
+static void set_search_col(GtkWidget *search_opts_box);
 static void search_callback(GtkWidget *search_entry);
 static bool name_is_del(int i);
 static void set_up_photo(GtkWidget *photo);
@@ -64,6 +65,7 @@ GtkWidget *g_view_frame;
 GtkWidget *g_win;
 ContactText g_contact;
 ContactWidgets g_entries;
+char *g_search_col;
 
 static void alloc_frame_size() {
     GtkAllocation allocation;
@@ -155,6 +157,13 @@ static void list_refresh() {
     gtk_tree_view_set_model(GTK_TREE_VIEW(g_list_view.view), g_list_view.model);
 }
 
+static void set_search_col(GtkWidget *search_opts_box) {
+    char *col_to_set_as = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(search_opts_box));
+    unsigned long length = strlen(col_to_set_as);
+    g_search_col = malloc(sizeof(char) * length);
+    g_search_col = strndup(col_to_set_as, length);
+}
+
 static void search_callback(GtkWidget *search_entry) {
     char *query = (char*)gtk_entry_buffer_get_text(gtk_entry_get_buffer(GTK_ENTRY(search_entry)));
     if (query[0] == '\0') {
@@ -163,7 +172,7 @@ static void search_callback(GtkWidget *search_entry) {
     }
 
     idList ids = {.ids = NULL, .id_amount = 0};
-    ids = db_search(query);
+    ids = db_search(query, g_search_col);
 
     if (gtk_tree_view_get_model(GTK_TREE_VIEW(g_list_view.view)) != NULL) {
         g_object_unref(gtk_tree_view_get_model(GTK_TREE_VIEW(g_list_view.view)));
@@ -186,7 +195,8 @@ static void search_callback(GtkWidget *search_entry) {
         char *address = db_get("ADDRESS", ids.ids[i]);
 
         gtk_tree_store_append(GTK_TREE_STORE(store), &iter, NULL);
-        gtk_tree_store_set(store, &iter, COL_ID, id, COL_NAME, name, COL_TITLE, title, COL_PHONE, phone, COL_EMAIL, email, COL_ORG, org, COL_ADDRESS, address, -1);
+        gtk_tree_store_set(store, &iter, COL_ID, id, COL_NAME, name, COL_TITLE, title, COL_PHONE,
+                phone, COL_EMAIL, email, COL_ORG, org, COL_ADDRESS, address, -1);
     }
     GtkTreeModel *model = GTK_TREE_MODEL(store);
 
@@ -635,10 +645,18 @@ static void setup_list_frame(GtkWidget *main_grid) {
     GtkWidget *search_entry = gtk_search_entry_new();
     GtkWidget *refresh_button = gtk_button_new_from_icon_name("view-refresh-symbolic",
             GTK_ICON_SIZE_BUTTON);
+    GtkWidget *search_opts_box = gtk_combo_box_text_new();
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(search_opts_box), "Name");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(search_opts_box), "Title");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(search_opts_box), "Phone Number");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(search_opts_box), "Email");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(search_opts_box), "Org");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(search_opts_box), "Address");
     gtk_widget_set_hexpand(search_entry, TRUE);
     gtk_grid_attach(GTK_GRID(list_grid), search_entry, 0, 0, 1, 1);
-    gtk_grid_attach(GTK_GRID(list_grid), refresh_button, 1, 0, 1, 1);
-    gtk_grid_attach(GTK_GRID(list_grid), list_scroller, 0, 1, 2, 2);
+    gtk_grid_attach(GTK_GRID(list_grid), search_opts_box, 1, 0, 1, 1);
+    gtk_grid_attach(GTK_GRID(list_grid), refresh_button, 2, 0, 1, 1);
+    gtk_grid_attach(GTK_GRID(list_grid), list_scroller, 0, 1, 3, 2);
 
     GtkWidget *list_frame = gtk_frame_new("List");
     gtk_container_add(GTK_CONTAINER(list_frame), list_grid);
@@ -649,10 +667,15 @@ static void setup_list_frame(GtkWidget *main_grid) {
     gtk_grid_attach(GTK_GRID(main_grid), list_frame, 0, 2, 1, 1);
 
     g_signal_connect(search_entry, "search-changed", G_CALLBACK(search_callback), NULL);
+    g_signal_connect(search_opts_box, "changed", G_CALLBACK(set_search_col), NULL);
     g_signal_connect(refresh_button, "clicked", G_CALLBACK(list_refresh), NULL);
 
     GtkTreeSelection *list_selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(g_list_view.view));
     g_signal_connect(list_selection, "changed", G_CALLBACK(switch_to_view_contact_frame), NULL);
+
+    //This has to be all the way out here because if it's not, the search_opt
+    //value is not set and there's a segfault
+    gtk_combo_box_set_active(GTK_COMBO_BOX(search_opts_box), 0);
 }
 
 static void setup_view_frame(GtkWidget *main_grid) {

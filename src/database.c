@@ -15,7 +15,7 @@ int g_search_count;
 idList g_ids;
 char *g_file_that_is_open;
 
-idList db_search(char *query);
+idList db_search(char *query, char *col);
 int db_set_open_file(char *filename);
 int db_backup_at(char *filename);
 void db_delete_contact(int id);
@@ -40,13 +40,15 @@ static int search_set_ids(void *data, int argc, char **argv, char **az_col_name)
     return 0;
 }
 
-idList db_search(char *query) {
+idList db_search(char *query, char *col) {
     sqlite3 *db;
     sqlite3_open(g_file_that_is_open, &db);
 
     //Making the pattern "query%" allows for fuzzy-ish searching rather than whole
     const char *pattern = sqlite3_mprintf("%s%", query); 
-    const char *search_query = "SELECT * FROM Contacts WHERE NAME LIKE ?;";
+    //Have to use a format string to put the column into the search query because
+    //it can't be escaped by single quotes and bind_text just does that
+    const char *search_query = sqlite3_mprintf("SELECT * FROM Contacts WHERE %s LIKE ?;", col);
     sqlite3_stmt *search_stmt;
     sqlite3_prepare_v2(db, search_query, -1, &search_stmt, NULL);
     sqlite3_bind_text(search_stmt, 1, pattern, -1, SQLITE_STATIC);
