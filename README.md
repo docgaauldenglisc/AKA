@@ -46,7 +46,9 @@ are in the **fbla/example.db** file.
 Below are extra guides that are also available in the pop up
 after the **Help** menu item is clicked:
 [Creating a Contact](#creating-a-contact)
+
 [Editing a Contact](#editing-a-contact)
+
 [Deleting a Contact](#deleting-a-contact)
 
 [Importing a Save](#importing-a-save)
@@ -91,12 +93,20 @@ Additionally, after a **Contact** is selected on the **List**,
 you can click on the **Edit** menu,
 and click the **Delete Contact** Button.
 
-## Importing a Save
+## Backing up a Save
 
-To import a **save**, click on the **File** menu,
-click on the **Import** item,
-and navigate to the save that you would like to import.
+To back up a **Save**, click on the **File** menu,
+then on the **Backup Contacts** item,
+and then navigate to where you would like to save your **Contacts**.
+
+The **File Name** must end in **.db** or it will not save.
+
+## Opening a Save
+
+To open a **save**, click on the **File** menu,
+click on the **Open Contacts** item,
+and navigate to the save that you would like to open.
 
 **Saves** must have a **.db** file ending,
-and they can be created by performing a **Backup** in the
+and they can be created by using **Backup Contacts** in the
 **File** menu.
