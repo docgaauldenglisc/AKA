@@ -1,9 +1,13 @@
 cmake_minimum_required(VERSION 3.10)
 project(aka)
 
+set(ORIG_DIR "${CMAKE_SOURCE_DIR}/help")
+set(DEST_DIR "${CMAKE_BINARY_DIR}")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_BUILD_TYPE Debug)
+
+file(COPY ${ORIG_DIR} DESTINATION ${DEST_DIR})
 
 find_package(PkgConfig REQUIRED)
 find_package(PCRE REQUIRED)

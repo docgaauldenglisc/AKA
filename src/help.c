@@ -137,40 +137,40 @@ static void change_guide_to_selection(GtkWidget *selection) {
         gtk_tree_model_get(model, &iter, COL_FILENAME, &file_num, -1);
         switch (file_num) {
         case ACTIONS:
-            open_guide("../src/help/actions");
+            open_guide("help/actions");
             break;
         case CREATINGACONTACT:
-            open_guide("../src/help/creatingacontact");
+            open_guide("help/creatingacontact");
             break;
         case DELETINGACONTACT:
-            open_guide("../src/help/deletingacontact");
+            open_guide("help/deletingacontact");
             break;
         case EDITINGACONTACT:
-            open_guide("../src/help/editingacontact");
+            open_guide("help/editingacontact");
             break;
         case CONTACTINFORMATION:
-            open_guide("../src/help/contactinformation");
+            open_guide("help/contactinformation");
             break;
         case NAMEEXPLAINED:
-            open_guide("../src/help/nameexplained");
+            open_guide("help/nameexplained");
             break;
         case TITLEEXPLAINED:
-            open_guide("../src/help/titleexplained");
+            open_guide("help/titleexplained");
             break;
         case PHONENUMBEREXPLAINED:
-            open_guide("../src/help/phonenumberexplained");
+            open_guide("help/phonenumberexplained");
             break;
         case EMAILEXPLAINED:
-            open_guide("../src/help/emailexplained");
+            open_guide("help/emailexplained");
             break;
         case ORGEXPLAINED:
-            open_guide("../src/help/orgexplained");
+            open_guide("help/orgexplained");
             break;
         case ADDRESSEXPLAINED:
-            open_guide("../src/help/addressexplained");
+            open_guide("help/addressexplained");
             break;
         case EXTRAEXPLAINED:
-            open_guide("../src/help/extraexplained");
+            open_guide("help/extraexplained");
             break;
         }
     }
