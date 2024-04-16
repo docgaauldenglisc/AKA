@@ -69,10 +69,12 @@ ContactWidgets g_entries;
 char *g_search_col;
 
 static void alloc_frame_size() {
-    GtkAllocation allocation;
-    gtk_widget_get_allocation(g_win, &allocation);
-    int min_width = (int)(0.25 * allocation.width);    
+    /*
+    GtkAllocation win_allocation;
+    gtk_widget_get_allocation(g_win, &win_allocation);
+    int min_width = (int)(0.25 * win_allocation.width);
     gtk_widget_set_size_request(GTK_WIDGET(g_view_frame), min_width, -1);
+    */
 }
 
 static void gui_send_error(char *err) {
@@ -222,13 +224,15 @@ static bool name_is_del(int i) {
 
 static void set_up_photo(GtkWidget *photo) {
     GdkPixbuf *buf = gtk_image_get_pixbuf(GTK_IMAGE(photo));
+    int window_width;
+    int window_height;
+    gtk_window_get_size(GTK_WINDOW(g_win), &window_width, &window_height);
     int width = gdk_pixbuf_get_width(buf);
     int height = gdk_pixbuf_get_height(buf);
-    double scale_width = 500.0 / width;
-    double scale_height = 500.0 / height;
-    double scale_factor = MIN(scale_width, scale_height);
-    GdkPixbuf *scaled_buf = gdk_pixbuf_scale_simple(buf, width * scale_factor, height * scale_factor, GDK_INTERP_BILINEAR);
-    photo = gtk_image_new_from_pixbuf(scaled_buf);
+    double scale_width = MIN(width, (0.35 * window_width));
+    double scale_height = MIN(height, (0.55 * window_height));
+    GdkPixbuf *scaled_buf = gdk_pixbuf_scale_simple(buf, scale_width, scale_height, GDK_INTERP_BILINEAR);
+    gtk_image_set_from_pixbuf(GTK_IMAGE(photo), scaled_buf);
 }
 
 static void on_file_select(GtkFileChooserButton *button, gpointer data) {
@@ -313,34 +317,43 @@ static void switch_to_edit_contact_frame() {
     GtkEntryBuffer *name_buf    = gtk_entry_buffer_new(g_contact.name, strlen(g_contact.name));
     g_entries.name              = gtk_entry_new_with_buffer(name_buf);
     GtkWidget *name_label       = gtk_label_new("Name: ");
+    gtk_widget_set_hexpand(g_entries.name, TRUE);
 
     GtkEntryBuffer *title_buf   = gtk_entry_buffer_new(g_contact.title, strlen(g_contact.title));
     g_entries.title             = gtk_entry_new_with_buffer(title_buf);
     GtkWidget *title_label      = gtk_label_new("Title: ");
+    gtk_widget_set_hexpand(g_entries.title, TRUE);
 
     GtkEntryBuffer *phone_buf   = gtk_entry_buffer_new(g_contact.phone, strlen(g_contact.phone));
     g_entries.phone             = gtk_entry_new_with_buffer(phone_buf);
     GtkWidget *phone_label      = gtk_label_new("Phone Number: ");
+    gtk_widget_set_hexpand(g_entries.phone, TRUE);
     
     GtkEntryBuffer *email_buf   = gtk_entry_buffer_new(g_contact.email, strlen(g_contact.email));
     g_entries.email             = gtk_entry_new_with_buffer(email_buf);
     GtkWidget *email_label      = gtk_label_new("Email: ");
+    gtk_widget_set_hexpand(g_entries.email, TRUE);
 
     GtkEntryBuffer *org_buf     = gtk_entry_buffer_new(g_contact.org, strlen(g_contact.org));
     g_entries.org               = gtk_entry_new_with_buffer(org_buf);
     GtkWidget *org_label        = gtk_label_new("Organization: ");
+    gtk_widget_set_hexpand(g_entries.org, TRUE);
     
     GtkEntryBuffer *address_buf = gtk_entry_buffer_new(g_contact.address, strlen(g_contact.address));
     g_entries.address           = gtk_entry_new_with_buffer(address_buf);
     GtkWidget *address_label    = gtk_label_new("Address: ");
+    gtk_widget_set_hexpand(g_entries.address, TRUE);
 
     GtkEntryBuffer *website_buf = gtk_entry_buffer_new(g_contact.website, strlen(g_contact.website));
     g_entries.website           = gtk_entry_new_with_buffer(website_buf);
     GtkWidget *website_label    = gtk_label_new("Website: ");
+    gtk_widget_set_hexpand(g_entries.website, TRUE);
 
-    GtkEntryBuffer *extra_buf   = gtk_entry_buffer_new(g_contact.address, strlen(g_contact.extra));
+    GtkEntryBuffer *extra_buf   = gtk_entry_buffer_new(g_contact.extra, strlen(g_contact.extra));
     g_entries.extra             = gtk_entry_new_with_buffer(extra_buf);
     GtkWidget *extra_label      = gtk_label_new("Extra Info: ");
+    gtk_widget_set_hexpand(g_entries.extra, TRUE);
+    gtk_widget_set_vexpand(g_entries.extra, TRUE);
 
     g_entries.photoloc = gtk_file_chooser_button_new("Photo Location", GTK_FILE_CHOOSER_ACTION_OPEN);
     if (strcmp(g_contact.photoloc, "") == 0) {
@@ -351,6 +364,7 @@ static void switch_to_edit_contact_frame() {
         gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(g_entries.photoloc), g_get_home_dir());
     }
     GtkWidget *photoloc_label  = gtk_label_new("Photo: ");
+    gtk_widget_set_hexpand(g_entries.photoloc, TRUE);
     g_signal_connect(g_entries.photoloc, "file-set", G_CALLBACK(on_file_select), &g_contact.photoloc);
 
     GtkWidget *save_button = gtk_button_new_with_label("Save");
@@ -375,7 +389,10 @@ static void switch_to_edit_contact_frame() {
     gtk_grid_attach(GTK_GRID(edit_contact_grid), g_entries.extra,       1, 8, 1, 1);
     gtk_grid_attach(GTK_GRID(edit_contact_grid), photoloc_label,        0, 9, 1, 1);
     gtk_grid_attach(GTK_GRID(edit_contact_grid), g_entries.photoloc,    1, 9, 1, 1);
-    gtk_grid_attach(GTK_GRID(edit_contact_grid), save_button,           2,10, 1, 1);
+    gtk_grid_attach(GTK_GRID(edit_contact_grid), save_button,           0,10, 2, 1);
+    gtk_grid_set_column_spacing(GTK_GRID(edit_contact_grid), 5);
+    gtk_grid_set_row_spacing(GTK_GRID(edit_contact_grid), 5);
+    gtk_container_set_border_width(GTK_CONTAINER(edit_contact_grid), 5);
 
     char *frame_str = malloc(sizeof(char) * 20);
     snprintf(frame_str, 20, "Edit %s", g_contact.name);
@@ -415,50 +432,51 @@ static void switch_to_view_contact_frame(GtkTreeSelection *selection) {
         if (strcmp(g_contact.photoloc, "\0")) {
             GtkWidget *photo = gtk_image_new_from_file(g_contact.photoloc);
             set_up_photo(photo);
+            gtk_widget_set_vexpand(photo, TRUE);
+            gtk_widget_set_hexpand(photo, TRUE);
             gtk_grid_attach(GTK_GRID(grid), photo, 1, 0, 2, 1);
         }
         GtkWidget *name_label       = gtk_label_new("Name: ");
-        gtk_widget_set_hexpand(name_label, TRUE);
+        gtk_label_set_xalign(GTK_LABEL(name_label), 1);
         GtkWidget *title_label      = gtk_label_new("Title: ");
-        gtk_widget_set_hexpand(title_label, TRUE);
+        gtk_label_set_xalign(GTK_LABEL(title_label), 1);
         GtkWidget *phone_label      = gtk_label_new("Number: ");
-        gtk_widget_set_hexpand(phone_label, TRUE);
+        gtk_label_set_xalign(GTK_LABEL(phone_label), 1);
         GtkWidget *email_label      = gtk_label_new("Email: ");
-        gtk_widget_set_hexpand(email_label, TRUE);
+        gtk_label_set_xalign(GTK_LABEL(email_label), 1);
         GtkWidget *org_label        = gtk_label_new("Org: ");
-        gtk_widget_set_hexpand(org_label, TRUE);
+        gtk_label_set_xalign(GTK_LABEL(org_label), 1);
         GtkWidget *address_label    = gtk_label_new("Address: ");
-        gtk_widget_set_hexpand(address_label, TRUE);
+        gtk_label_set_xalign(GTK_LABEL(address_label), 1);
         GtkWidget *website_label    = gtk_label_new("Website: ");
-        gtk_widget_set_hexpand(website_label, TRUE);
+        gtk_label_set_xalign(GTK_LABEL(website_label), 1);
         GtkWidget *extra_label      = gtk_label_new("Extra Info: ");
-        gtk_widget_set_hexpand(extra_label, TRUE);
+        gtk_label_set_xalign(GTK_LABEL(extra_label), 1);
 
         ContactWidgets c_labels;
         GtkWidget *edit_button;
         GtkWidget *delete_button;
         c_labels.name = gtk_label_new(g_contact.name);
-        gtk_widget_set_hexpand(c_labels.name, TRUE);
+        gtk_label_set_xalign(GTK_LABEL(c_labels.name), 0);
         c_labels.title = gtk_label_new(g_contact.title);
-        gtk_widget_set_hexpand(c_labels.title, TRUE);
+        gtk_label_set_xalign(GTK_LABEL(c_labels.title), 0);
         c_labels.phone = gtk_label_new(g_contact.phone);
-        gtk_widget_set_hexpand(c_labels.phone, TRUE);
+        gtk_label_set_xalign(GTK_LABEL(c_labels.phone), 0);
         c_labels.email = gtk_label_new(g_contact.email);
-        gtk_widget_set_hexpand(c_labels.email, TRUE);
+        gtk_label_set_xalign(GTK_LABEL(c_labels.email), 0);
         c_labels.org = gtk_label_new(g_contact.org);
-        gtk_widget_set_hexpand(c_labels.org, TRUE);
+        gtk_label_set_xalign(GTK_LABEL(c_labels.org), 0);
         c_labels.address = gtk_label_new(g_contact.address);
-        gtk_widget_set_hexpand(c_labels.address, TRUE);
-        c_labels.website = gtk_label_new(g_contact.address);
-        gtk_widget_set_hexpand(c_labels.website, TRUE);
+        gtk_label_set_xalign(GTK_LABEL(c_labels.address), 0);
+        c_labels.website = gtk_label_new(g_contact.website);
+        gtk_label_set_xalign(GTK_LABEL(c_labels.website), 0);
         c_labels.extra = gtk_label_new(g_contact.extra);
-        gtk_widget_set_hexpand(c_labels.extra, TRUE);
+        gtk_label_set_xalign(GTK_LABEL(c_labels.extra), 0);
         edit_button = gtk_button_new_with_label("Edit");
         delete_button = gtk_button_new_with_label("Delete");
 
         g_signal_connect(edit_button, "clicked", G_CALLBACK(switch_to_edit_contact_frame), NULL);
         g_signal_connect(delete_button, "clicked", G_CALLBACK(gui_delete_contact), NULL);
-        gtk_widget_set_hexpand(edit_button, TRUE);
 //                                                                x, y, w, h
         gtk_grid_attach(GTK_GRID(grid), name_label              , 1, 1, 1, 1);
         gtk_grid_attach(GTK_GRID(grid), title_label             , 1, 2, 1, 1);
@@ -478,9 +496,14 @@ static void switch_to_view_contact_frame(GtkTreeSelection *selection) {
         gtk_grid_attach(GTK_GRID(grid), c_labels.extra          , 2, 8, 1, 1);
         gtk_grid_attach(GTK_GRID(grid), edit_button             , 1, 9, 1, 1);
         gtk_grid_attach(GTK_GRID(grid), delete_button           , 2, 9, 1, 1);
+        gtk_grid_set_column_spacing(GTK_GRID(grid), 5);
+        gtk_grid_set_row_spacing(GTK_GRID(grid), 5);
+        gtk_container_set_border_width(GTK_CONTAINER(grid), 5);
 
         gtk_container_add(GTK_CONTAINER(g_view_frame), grid);
+
         gtk_widget_show_all(g_view_frame);
+        alloc_frame_size();
     }
 }
 
@@ -512,35 +535,46 @@ static void switch_to_new_contact_frame() {
 
     g_entries.name     = gtk_entry_new();
     name_label      = gtk_label_new("Name: ");
+    gtk_widget_set_hexpand(g_entries.name, TRUE);
 
     g_entries.title    = gtk_entry_new();
     title_label     = gtk_label_new("Title: ");
+    gtk_widget_set_hexpand(g_entries.title, TRUE);
 
     g_entries.phone    = gtk_entry_new();
     phone_label     = gtk_label_new("Phone Number: ");
+    gtk_widget_set_hexpand(g_entries.phone, TRUE);
     
     g_entries.email    = gtk_entry_new();
     email_label     = gtk_label_new("Email: ");
+    gtk_widget_set_hexpand(g_entries.email, TRUE);
 
     g_entries.org      = gtk_entry_new();
     org_label       = gtk_label_new("Organization: ");
+    gtk_widget_set_hexpand(g_entries.org, TRUE);
     
     g_entries.address  = gtk_entry_new();
     address_label   = gtk_label_new("Address: ");
+    gtk_widget_set_hexpand(g_entries.address, TRUE);
 
     g_entries.website = gtk_entry_new();
     website_label   = gtk_label_new("Website: ");
+    gtk_widget_set_hexpand(g_entries.website, TRUE);
 
     g_entries.extra    = gtk_entry_new();
     extra_label     = gtk_label_new("Extra Info: ");
+    gtk_widget_set_hexpand(g_entries.extra, TRUE);
+    gtk_widget_set_vexpand(g_entries.extra, TRUE);
 
     g_entries.photoloc = gtk_file_chooser_button_new("Photo", GTK_FILE_CHOOSER_ACTION_OPEN);
     photoloc_label  = gtk_label_new("Photo: ");
     gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(g_entries.photoloc), g_get_home_dir());
     g_signal_connect(g_entries.photoloc, "file-set", G_CALLBACK(on_file_select), &g_contact.photoloc);
+    gtk_widget_set_hexpand(g_entries.photoloc, TRUE);
 
     save_button = gtk_button_new_with_label("Save");
     g_signal_connect(save_button, "clicked", G_CALLBACK(gui_save_contact), NULL);
+    gtk_widget_set_hexpand(save_button, TRUE);
 
     new_contact_grid = gtk_grid_new();
     gtk_grid_attach(GTK_GRID(new_contact_grid), name_label,         0, 1, 1, 1);
@@ -561,7 +595,10 @@ static void switch_to_new_contact_frame() {
     gtk_grid_attach(GTK_GRID(new_contact_grid), g_entries.extra,    1, 8, 1, 1);
     gtk_grid_attach(GTK_GRID(new_contact_grid), photoloc_label,     0, 9, 1, 1);
     gtk_grid_attach(GTK_GRID(new_contact_grid), g_entries.photoloc, 1, 9, 1, 1);
-    gtk_grid_attach(GTK_GRID(new_contact_grid), save_button,        2,10, 1, 1);
+    gtk_grid_attach(GTK_GRID(new_contact_grid), save_button,        0,10, 2, 1);
+    gtk_grid_set_column_spacing(GTK_GRID(new_contact_grid), 5);
+    gtk_grid_set_row_spacing(GTK_GRID(new_contact_grid), 5);
+    gtk_container_set_border_width(GTK_CONTAINER(new_contact_grid), 5);
 
     gtk_frame_set_label(GTK_FRAME(g_view_frame), "New Contact");
     gtk_container_add(GTK_CONTAINER(g_view_frame), new_contact_grid);
@@ -658,12 +695,12 @@ static void setup_title_bar(GtkWidget *main_grid) {
 
 static void setup_action_box(GtkWidget *main_grid) {
     GtkWidget *action_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    GtkWidget *new_contact_button = gtk_button_new_with_label("+");
-    GtkWidget *edit_contact_button = gtk_button_new_with_label("/");
-    GtkWidget *delete_contact_button = gtk_button_new_with_label("-");
-    gtk_box_pack_start(GTK_BOX(action_box), new_contact_button, FALSE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(action_box), edit_contact_button, FALSE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(action_box), delete_contact_button, FALSE, TRUE, 0);
+    GtkWidget *new_contact_button = gtk_button_new_with_label("New Contact");
+    GtkWidget *edit_contact_button = gtk_button_new_with_label("Edit Contact");
+    GtkWidget *delete_contact_button = gtk_button_new_with_label("Delete Contact");
+    gtk_box_pack_start(GTK_BOX(action_box), new_contact_button, FALSE, TRUE, 5);
+    gtk_box_pack_start(GTK_BOX(action_box), edit_contact_button, FALSE, TRUE, 5);
+    gtk_box_pack_start(GTK_BOX(action_box), delete_contact_button, FALSE, TRUE, 5);
 
     gtk_grid_attach(GTK_GRID(main_grid), action_box, 0, 1, 2, 1);
 
@@ -695,6 +732,8 @@ static void setup_list_frame(GtkWidget *main_grid) {
     gtk_grid_attach(GTK_GRID(list_grid), search_opts_box, 1, 0, 1, 1);
     gtk_grid_attach(GTK_GRID(list_grid), refresh_button, 2, 0, 1, 1);
     gtk_grid_attach(GTK_GRID(list_grid), list_scroller, 0, 1, 3, 2);
+    gtk_grid_set_column_spacing(GTK_GRID(list_grid), 5);
+    gtk_container_set_border_width(GTK_CONTAINER(list_grid), 5);
 
     GtkWidget *list_frame = gtk_frame_new("List");
     gtk_container_add(GTK_CONTAINER(list_frame), list_grid);
@@ -711,6 +750,8 @@ static void setup_list_frame(GtkWidget *main_grid) {
     GtkTreeSelection *list_selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(g_list_view.view));
     g_signal_connect(list_selection, "changed", G_CALLBACK(switch_to_view_contact_frame), NULL);
 
+    gtk_frame_set_shadow_type(GTK_FRAME(list_frame), GTK_SHADOW_OUT);
+    gtk_container_set_border_width(GTK_CONTAINER(list_frame), 5);
     //This has to be all the way out here because if it's not, the search_opt
     //value is not set and there's a segfault
     gtk_combo_box_set_active(GTK_COMBO_BOX(search_opts_box), 0);
@@ -722,6 +763,8 @@ static void setup_view_frame(GtkWidget *main_grid) {
     gtk_widget_set_hexpand(g_view_frame, TRUE);
     gtk_widget_set_vexpand(g_view_frame, TRUE);
     gtk_grid_attach(GTK_GRID(main_grid), g_view_frame, 1, 2, 1, 1);
+    gtk_frame_set_shadow_type(GTK_FRAME(g_view_frame), GTK_SHADOW_OUT);
+    gtk_container_set_border_width(GTK_CONTAINER(g_view_frame), 5);
 }
 
 static void setup_main_window(GtkApplication *app) {
