@@ -69,12 +69,10 @@ ContactWidgets g_entries;
 char *g_search_col;
 
 static void alloc_frame_size() {
-    /*
     GtkAllocation win_allocation;
     gtk_widget_get_allocation(g_win, &win_allocation);
-    int min_width = (int)(0.25 * win_allocation.width);
+    int min_width = (int)(0.35 * win_allocation.width);
     gtk_widget_set_size_request(GTK_WIDGET(g_view_frame), min_width, -1);
-    */
 }
 
 static void gui_send_error(char *err) {
@@ -229,8 +227,8 @@ static void set_up_photo(GtkWidget *photo) {
     gtk_window_get_size(GTK_WINDOW(g_win), &window_width, &window_height);
     int width = gdk_pixbuf_get_width(buf);
     int height = gdk_pixbuf_get_height(buf);
-    double scale_width = MIN(width, (0.35 * window_width));
-    double scale_height = MIN(height, (0.55 * window_height));
+    double scale_width = MIN(width, (0.45 * window_width));
+    double scale_height = MIN(height, (0.45 * window_height));
     GdkPixbuf *scaled_buf = gdk_pixbuf_scale_simple(buf, scale_width, scale_height, GDK_INTERP_BILINEAR);
     gtk_image_set_from_pixbuf(GTK_IMAGE(photo), scaled_buf);
 }
@@ -432,26 +430,33 @@ static void switch_to_view_contact_frame(GtkTreeSelection *selection) {
         if (strcmp(g_contact.photoloc, "\0")) {
             GtkWidget *photo = gtk_image_new_from_file(g_contact.photoloc);
             set_up_photo(photo);
-            gtk_widget_set_vexpand(photo, TRUE);
             gtk_widget_set_hexpand(photo, TRUE);
             gtk_grid_attach(GTK_GRID(grid), photo, 1, 0, 2, 1);
         }
         GtkWidget *name_label       = gtk_label_new("Name: ");
         gtk_label_set_xalign(GTK_LABEL(name_label), 1);
+        gtk_widget_set_vexpand(name_label, TRUE);
         GtkWidget *title_label      = gtk_label_new("Title: ");
         gtk_label_set_xalign(GTK_LABEL(title_label), 1);
+        gtk_widget_set_vexpand(title_label, TRUE);
         GtkWidget *phone_label      = gtk_label_new("Number: ");
         gtk_label_set_xalign(GTK_LABEL(phone_label), 1);
+        gtk_widget_set_vexpand(phone_label, TRUE);
         GtkWidget *email_label      = gtk_label_new("Email: ");
         gtk_label_set_xalign(GTK_LABEL(email_label), 1);
+        gtk_widget_set_vexpand(email_label, TRUE);
         GtkWidget *org_label        = gtk_label_new("Org: ");
         gtk_label_set_xalign(GTK_LABEL(org_label), 1);
+        gtk_widget_set_vexpand(org_label, TRUE);
         GtkWidget *address_label    = gtk_label_new("Address: ");
         gtk_label_set_xalign(GTK_LABEL(address_label), 1);
+        gtk_widget_set_vexpand(address_label, TRUE);
         GtkWidget *website_label    = gtk_label_new("Website: ");
         gtk_label_set_xalign(GTK_LABEL(website_label), 1);
+        gtk_widget_set_vexpand(website_label, TRUE);
         GtkWidget *extra_label      = gtk_label_new("Extra Info: ");
         gtk_label_set_xalign(GTK_LABEL(extra_label), 1);
+        gtk_widget_set_vexpand(extra_label, TRUE);
 
         ContactWidgets c_labels;
         c_labels.name = gtk_label_new(g_contact.name);
