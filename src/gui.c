@@ -454,10 +454,9 @@ static void switch_to_view_contact_frame(GtkTreeSelection *selection) {
         gtk_label_set_xalign(GTK_LABEL(extra_label), 1);
 
         ContactWidgets c_labels;
-        GtkWidget *edit_button;
-        GtkWidget *delete_button;
         c_labels.name = gtk_label_new(g_contact.name);
         gtk_label_set_xalign(GTK_LABEL(c_labels.name), 0);
+        gtk_widget_set_hexpand(c_labels.name, TRUE);
         c_labels.title = gtk_label_new(g_contact.title);
         gtk_label_set_xalign(GTK_LABEL(c_labels.title), 0);
         c_labels.phone = gtk_label_new(g_contact.phone);
@@ -472,12 +471,23 @@ static void switch_to_view_contact_frame(GtkTreeSelection *selection) {
         gtk_label_set_xalign(GTK_LABEL(c_labels.website), 0);
         c_labels.extra = gtk_label_new(g_contact.extra);
         gtk_label_set_xalign(GTK_LABEL(c_labels.extra), 0);
+
+        GtkWidget *action_box;
+        GtkWidget *edit_button;
+        GtkWidget *delete_button;
+        action_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
         edit_button = gtk_button_new_with_label("Edit");
         delete_button = gtk_button_new_with_label("Delete");
+        gtk_container_add(GTK_CONTAINER(action_box), edit_button);
+        gtk_container_add(GTK_CONTAINER(action_box), delete_button);
+        gtk_container_set_border_width(GTK_CONTAINER(action_box), 5);
+        gtk_widget_set_hexpand(edit_button, TRUE);
+        gtk_widget_set_hexpand(delete_button, TRUE);
+        gtk_widget_set_hexpand(action_box, TRUE);
 
         g_signal_connect(edit_button, "clicked", G_CALLBACK(switch_to_edit_contact_frame), NULL);
         g_signal_connect(delete_button, "clicked", G_CALLBACK(gui_delete_contact), NULL);
-//                                                                x, y, w, h
+        //                                                        x, y, w, h
         gtk_grid_attach(GTK_GRID(grid), name_label              , 1, 1, 1, 1);
         gtk_grid_attach(GTK_GRID(grid), title_label             , 1, 2, 1, 1);
         gtk_grid_attach(GTK_GRID(grid), phone_label             , 1, 3, 1, 1);
@@ -494,8 +504,7 @@ static void switch_to_view_contact_frame(GtkTreeSelection *selection) {
         gtk_grid_attach(GTK_GRID(grid), c_labels.address        , 2, 6, 1, 1);
         gtk_grid_attach(GTK_GRID(grid), c_labels.website        , 2, 7, 1, 1);
         gtk_grid_attach(GTK_GRID(grid), c_labels.extra          , 2, 8, 1, 1);
-        gtk_grid_attach(GTK_GRID(grid), edit_button             , 1, 9, 1, 1);
-        gtk_grid_attach(GTK_GRID(grid), delete_button           , 2, 9, 1, 1);
+        gtk_grid_attach(GTK_GRID(grid), action_box              , 1, 9, 2, 1);
         gtk_grid_set_column_spacing(GTK_GRID(grid), 5);
         gtk_grid_set_row_spacing(GTK_GRID(grid), 5);
         gtk_container_set_border_width(GTK_CONTAINER(grid), 5);
@@ -703,6 +712,7 @@ static void setup_action_box(GtkWidget *main_grid) {
     gtk_box_pack_start(GTK_BOX(action_box), delete_contact_button, FALSE, TRUE, 5);
 
     gtk_grid_attach(GTK_GRID(main_grid), action_box, 0, 1, 2, 1);
+    gtk_container_set_border_width(GTK_CONTAINER(action_box), 5);
 
     g_signal_connect(new_contact_button, "clicked", G_CALLBACK(switch_to_new_contact_frame), NULL);
     g_signal_connect(edit_contact_button, "clicked", G_CALLBACK(switch_to_edit_contact_frame), NULL);
