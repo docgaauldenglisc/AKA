@@ -71,7 +71,7 @@ char *g_search_col;
 static void alloc_frame_size() {
     GtkAllocation win_allocation;
     gtk_widget_get_allocation(g_win, &win_allocation);
-    int min_width = (int)(0.35 * win_allocation.width);
+    int min_width = (int)(0.45 * win_allocation.width);
     gtk_widget_set_size_request(GTK_WIDGET(g_view_frame), min_width, -1);
 }
 
@@ -222,14 +222,28 @@ static bool name_is_del(int i) {
 
 static void set_up_photo(GtkWidget *photo) {
     GdkPixbuf *buf = gtk_image_get_pixbuf(GTK_IMAGE(photo));
+    int width = gdk_pixbuf_get_width(buf);
+    int height = gdk_pixbuf_get_height(buf);
+
     int window_width;
     int window_height;
     gtk_window_get_size(GTK_WINDOW(g_win), &window_width, &window_height);
-    int width = gdk_pixbuf_get_width(buf);
-    int height = gdk_pixbuf_get_height(buf);
-    double scale_width = MIN(width, (0.45 * window_width));
-    double scale_height = MIN(height, (0.45 * window_height));
-    GdkPixbuf *scaled_buf = gdk_pixbuf_scale_simple(buf, scale_width, scale_height, GDK_INTERP_BILINEAR);
+
+    int width_goal = 0.35 * window_width;
+    int height_goal = 0.35 * window_height;
+    double width_after;
+    double height_after;
+    if (width > width_goal || height > height_goal) {
+        double scale_factor = MIN(((double)width_goal / width), ((double)height_goal / width));
+        width_after = width * scale_factor;
+        height_after = height * scale_factor;
+    }
+    else {
+        width_after = width;
+        height_after = height;
+    }
+
+    GdkPixbuf *scaled_buf = gdk_pixbuf_scale_simple(buf, width_after, height_after, GDK_INTERP_BILINEAR);
     gtk_image_set_from_pixbuf(GTK_IMAGE(photo), scaled_buf);
 }
 
@@ -315,41 +329,49 @@ static void switch_to_edit_contact_frame() {
     GtkEntryBuffer *name_buf    = gtk_entry_buffer_new(g_contact.name, strlen(g_contact.name));
     g_entries.name              = gtk_entry_new_with_buffer(name_buf);
     GtkWidget *name_label       = gtk_label_new("Name: ");
+    gtk_label_set_xalign(GTK_LABEL(name_label), 1);
     gtk_widget_set_hexpand(g_entries.name, TRUE);
 
     GtkEntryBuffer *title_buf   = gtk_entry_buffer_new(g_contact.title, strlen(g_contact.title));
     g_entries.title             = gtk_entry_new_with_buffer(title_buf);
     GtkWidget *title_label      = gtk_label_new("Title: ");
+    gtk_label_set_xalign(GTK_LABEL(title_label), 1);
     gtk_widget_set_hexpand(g_entries.title, TRUE);
 
     GtkEntryBuffer *phone_buf   = gtk_entry_buffer_new(g_contact.phone, strlen(g_contact.phone));
     g_entries.phone             = gtk_entry_new_with_buffer(phone_buf);
     GtkWidget *phone_label      = gtk_label_new("Phone Number: ");
+    gtk_label_set_xalign(GTK_LABEL(phone_label), 1);
     gtk_widget_set_hexpand(g_entries.phone, TRUE);
     
     GtkEntryBuffer *email_buf   = gtk_entry_buffer_new(g_contact.email, strlen(g_contact.email));
     g_entries.email             = gtk_entry_new_with_buffer(email_buf);
     GtkWidget *email_label      = gtk_label_new("Email: ");
+    gtk_label_set_xalign(GTK_LABEL(email_label), 1);
     gtk_widget_set_hexpand(g_entries.email, TRUE);
 
     GtkEntryBuffer *org_buf     = gtk_entry_buffer_new(g_contact.org, strlen(g_contact.org));
     g_entries.org               = gtk_entry_new_with_buffer(org_buf);
     GtkWidget *org_label        = gtk_label_new("Organization: ");
+    gtk_label_set_xalign(GTK_LABEL(org_label), 1);
     gtk_widget_set_hexpand(g_entries.org, TRUE);
     
     GtkEntryBuffer *address_buf = gtk_entry_buffer_new(g_contact.address, strlen(g_contact.address));
     g_entries.address           = gtk_entry_new_with_buffer(address_buf);
     GtkWidget *address_label    = gtk_label_new("Address: ");
+    gtk_label_set_xalign(GTK_LABEL(address_label), 1);
     gtk_widget_set_hexpand(g_entries.address, TRUE);
 
     GtkEntryBuffer *website_buf = gtk_entry_buffer_new(g_contact.website, strlen(g_contact.website));
     g_entries.website           = gtk_entry_new_with_buffer(website_buf);
     GtkWidget *website_label    = gtk_label_new("Website: ");
+    gtk_label_set_xalign(GTK_LABEL(website_label), 1);
     gtk_widget_set_hexpand(g_entries.website, TRUE);
 
     GtkEntryBuffer *extra_buf   = gtk_entry_buffer_new(g_contact.extra, strlen(g_contact.extra));
     g_entries.extra             = gtk_entry_new_with_buffer(extra_buf);
     GtkWidget *extra_label      = gtk_label_new("Extra Info: ");
+    gtk_label_set_xalign(GTK_LABEL(extra_label), 1);
     gtk_widget_set_hexpand(g_entries.extra, TRUE);
     gtk_widget_set_vexpand(g_entries.extra, TRUE);
 
@@ -362,6 +384,7 @@ static void switch_to_edit_contact_frame() {
         gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(g_entries.photoloc), g_get_home_dir());
     }
     GtkWidget *photoloc_label  = gtk_label_new("Photo: ");
+    gtk_label_set_xalign(GTK_LABEL(photoloc_label), 1);
     gtk_widget_set_hexpand(g_entries.photoloc, TRUE);
     g_signal_connect(g_entries.photoloc, "file-set", G_CALLBACK(on_file_select), &g_contact.photoloc);
 
@@ -549,39 +572,48 @@ static void switch_to_new_contact_frame() {
 
     g_entries.name     = gtk_entry_new();
     name_label      = gtk_label_new("Name: ");
+    gtk_label_set_xalign(GTK_LABEL(name_label), 1);
     gtk_widget_set_hexpand(g_entries.name, TRUE);
 
     g_entries.title    = gtk_entry_new();
     title_label     = gtk_label_new("Title: ");
+    gtk_label_set_xalign(GTK_LABEL(title_label), 1);
     gtk_widget_set_hexpand(g_entries.title, TRUE);
 
     g_entries.phone    = gtk_entry_new();
     phone_label     = gtk_label_new("Phone Number: ");
+    gtk_label_set_xalign(GTK_LABEL(phone_label), 1);
     gtk_widget_set_hexpand(g_entries.phone, TRUE);
     
     g_entries.email    = gtk_entry_new();
     email_label     = gtk_label_new("Email: ");
+    gtk_label_set_xalign(GTK_LABEL(email_label), 1);
     gtk_widget_set_hexpand(g_entries.email, TRUE);
 
     g_entries.org      = gtk_entry_new();
     org_label       = gtk_label_new("Organization: ");
+    gtk_label_set_xalign(GTK_LABEL(org_label), 1);
     gtk_widget_set_hexpand(g_entries.org, TRUE);
     
     g_entries.address  = gtk_entry_new();
     address_label   = gtk_label_new("Address: ");
+    gtk_label_set_xalign(GTK_LABEL(address_label), 1);
     gtk_widget_set_hexpand(g_entries.address, TRUE);
 
     g_entries.website = gtk_entry_new();
     website_label   = gtk_label_new("Website: ");
+    gtk_label_set_xalign(GTK_LABEL(website_label), 1);
     gtk_widget_set_hexpand(g_entries.website, TRUE);
 
     g_entries.extra    = gtk_entry_new();
     extra_label     = gtk_label_new("Extra Info: ");
+    gtk_label_set_xalign(GTK_LABEL(extra_label), 1);
     gtk_widget_set_hexpand(g_entries.extra, TRUE);
     gtk_widget_set_vexpand(g_entries.extra, TRUE);
 
     g_entries.photoloc = gtk_file_chooser_button_new("Photo", GTK_FILE_CHOOSER_ACTION_OPEN);
     photoloc_label  = gtk_label_new("Photo: ");
+    gtk_label_set_xalign(GTK_LABEL(photoloc_label), 1);
     gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(g_entries.photoloc), g_get_home_dir());
     g_signal_connect(g_entries.photoloc, "file-set", G_CALLBACK(on_file_select), &g_contact.photoloc);
     gtk_widget_set_hexpand(g_entries.photoloc, TRUE);
@@ -775,7 +807,7 @@ static void setup_list_frame(GtkWidget *main_grid) {
 static void setup_view_frame(GtkWidget *main_grid) {
     g_view_frame = gtk_frame_new("View");
     gtk_frame_set_label_align(GTK_FRAME(g_view_frame), 0.5, 0);
-    gtk_widget_set_hexpand(g_view_frame, TRUE);
+    gtk_widget_set_hexpand(g_view_frame, FALSE);
     gtk_widget_set_vexpand(g_view_frame, TRUE);
     gtk_grid_attach(GTK_GRID(main_grid), g_view_frame, 1, 2, 1, 1);
     gtk_frame_set_shadow_type(GTK_FRAME(g_view_frame), GTK_SHADOW_OUT);
