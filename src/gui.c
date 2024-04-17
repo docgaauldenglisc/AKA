@@ -829,6 +829,7 @@ static void setup_main_window(GtkApplication *app) {
     gtk_widget_show_all(g_win);
 
     alloc_frame_size();
+    g_signal_connect(g_win, "size-allocate", G_CALLBACK(alloc_frame_size), NULL);
 }
 
 int gui_init(int argc, char **argv) {
