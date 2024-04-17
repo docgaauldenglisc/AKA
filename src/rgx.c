@@ -9,16 +9,12 @@
 //Local Files
 #include "rgx.h"
 
-#define GOOD 0
-#define BAD 1
-
 bool string_is_empty(char *str);
 int rgx_check_website(char *website);
 int rgx_check_filename(char *filename);
 int rgc_check_name(char *name);
 int rgx_check_phone(char *phone);
 int rgx_check_email(char *email);
-int rgx_check_address(char *address);
 
 bool string_is_empty(char *str) {
     if (str[0] == '\0') {
@@ -94,21 +90,8 @@ int rgx_check_email(char *email) {
     if (string_is_empty(email)) {
         return GOOD;
     }
-    const char *pattern = "((^(\\w)+)(@(\\w)+)(\\.[a-zA-Z]+$|\\.[a-zA-Z]+\\.\\w{2}$))";
+    const char *pattern = "^\\w+@\\w+(\\.[a-zA-Z]+|\\.[a-zA-Z]+\\.\\w{2})$";
     if (match_str(email, pattern)) {
-        return GOOD;
-    }
-    else {
-        return BAD;
-    }
-}
-
-int rgx_check_address(char *address) {
-    if (string_is_empty(address)) {
-        return GOOD;
-    }
-    const char *pattern = "\\d+ ([\\w| ]+|[\\w| ]+,[\\w| ]+), [a-zA-Z]{2,}, [0-9]{5,}";
-    if (match_str(address, pattern)) {
         return GOOD;
     }
     else {
