@@ -134,7 +134,6 @@ static GtkWidget *list_create_view() {
     gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Phone Number" , renderer, "text", COL_PHONE, NULL);
     gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Email"        , renderer, "text", COL_EMAIL, NULL);
     gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Org"          , renderer, "text", COL_ORG, NULL);
-    gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "Address"      , renderer, "text", COL_ADDRESS, NULL);
     
     GtkTreeModel *model = list_create_model();
     gtk_tree_view_set_model(GTK_TREE_VIEW(view), model);
@@ -443,28 +442,20 @@ static void switch_to_view_contact_frame(GtkTreeSelection *selection) {
         }
         GtkWidget *name_label       = gtk_label_new("Name: ");
         gtk_label_set_xalign(GTK_LABEL(name_label), 1);
-        gtk_widget_set_vexpand(name_label, TRUE);
         GtkWidget *title_label      = gtk_label_new("Title: ");
         gtk_label_set_xalign(GTK_LABEL(title_label), 1);
-        gtk_widget_set_vexpand(title_label, TRUE);
         GtkWidget *phone_label      = gtk_label_new("Number: ");
         gtk_label_set_xalign(GTK_LABEL(phone_label), 1);
-        gtk_widget_set_vexpand(phone_label, TRUE);
         GtkWidget *email_label      = gtk_label_new("Email: ");
         gtk_label_set_xalign(GTK_LABEL(email_label), 1);
-        gtk_widget_set_vexpand(email_label, TRUE);
         GtkWidget *org_label        = gtk_label_new("Org: ");
         gtk_label_set_xalign(GTK_LABEL(org_label), 1);
-        gtk_widget_set_vexpand(org_label, TRUE);
         GtkWidget *address_label    = gtk_label_new("Address: ");
         gtk_label_set_xalign(GTK_LABEL(address_label), 1);
-        gtk_widget_set_vexpand(address_label, TRUE);
         GtkWidget *website_label    = gtk_label_new("Website: ");
         gtk_label_set_xalign(GTK_LABEL(website_label), 1);
-        gtk_widget_set_vexpand(website_label, TRUE);
         GtkWidget *extra_label      = gtk_label_new("Extra Info: ");
         gtk_label_set_xalign(GTK_LABEL(extra_label), 1);
-        gtk_widget_set_vexpand(extra_label, TRUE);
 
         ContactWidgets c_labels;
         c_labels.name = gtk_label_new(g_contact.name);
