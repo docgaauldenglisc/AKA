@@ -508,7 +508,7 @@ static void switch_to_view_contact_frame(GtkTreeSelection *selection) {
         delete_button = gtk_button_new_with_label("Delete");
         gtk_container_add(GTK_CONTAINER(action_box), edit_button);
         gtk_container_add(GTK_CONTAINER(action_box), delete_button);
-        gtk_container_set_border_width(GTK_CONTAINER(action_box), 5);
+        gtk_container_set_border_width(GTK_CONTAINER(action_box), 0);
         gtk_widget_set_hexpand(edit_button, TRUE);
         gtk_widget_set_hexpand(delete_button, TRUE);
         gtk_widget_set_hexpand(action_box, TRUE);
