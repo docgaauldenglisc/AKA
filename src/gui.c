@@ -658,6 +658,7 @@ static void open_open_dialog() {
     }
 
     gtk_widget_destroy(dialog);
+    list_refresh();
 }
 
 static void open_backup_dialog() {
@@ -686,7 +687,6 @@ static void open_backup_dialog() {
     }
 
     gtk_widget_destroy(dialog);
-    list_refresh();
 }
 
 static void setup_title_bar(GtkWidget *main_grid) {
