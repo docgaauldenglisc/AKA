@@ -45,7 +45,7 @@ int rgx_check_website(char *website) {
     if (string_is_empty(website)) {
         return GOOD;
     }
-    const char *pattern = "^(http(s|):\\/\\/|)[\\w]+\\.[\\w]{2,}(|\\.[\\w]{2,})(\\/|)(\\S+|)$";
+    const char *pattern = "^(http(s|):\\/\\/|).+\\.[\\w]{2,}(|\\.[\\w]{2,})(\\/|)(\\S+|)$";
     if (match_str(website, pattern)) {
         return GOOD;
     }
@@ -77,7 +77,7 @@ int rgx_check_phone(char *phone) {
     if (string_is_empty(phone)) {
         return GOOD;
     }
-    const char *pattern = "^(\\+\\d+|\\+\\d+-\\d+|)( |)((\\(|)\\d{3}(\\)|))(-| )(.{3})(-| )(.{4})$";
+    const char *pattern = "^[\\s\\.\\(\\)\\-\\d]+$";
     if (match_str(phone, pattern)) {
         return GOOD;
     }
