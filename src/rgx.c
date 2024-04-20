@@ -49,7 +49,7 @@ int rgx_check_website(char *website) {
     if (string_is_empty(website)) {
         return GOOD;
     }
-    const char *pattern = "^(http(s|):\\/\\/|)[\\w]+\\.[\\w]{2,}(|\\.[\\w]{2,})(\\/|)(.+|)$";
+    const char *pattern = "^(http(s|):\\/\\/|)[\\w]+\\.[\\w]{2,}(|\\.[\\w]{2,})(\\/|)(\\S+|)$";
     if (match_str(website, pattern)) {
         return GOOD;
     }
