@@ -1,6 +1,14 @@
 #ifndef DATABASE_H
 #define DATABASE_H
 
+enum {
+    CONTACT_GOOD = 0,
+    CONTACT_PHONE_BAD,
+    CONTACT_EMAIL_BAD,
+    CONTACT_NAME_BAD,
+    CONTACT_WEBSITE_BAD,
+};
+
 typedef struct {
     char *id;
     char *name;

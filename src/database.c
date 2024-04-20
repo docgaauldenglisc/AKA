@@ -216,19 +216,16 @@ int db_max_id() {
 
 int db_edit_contact(ContactText *con) {
     if (rgx_check_phone(con->phone) == 1) {
-        return 1;
+        return CONTACT_PHONE_BAD;
     }
     if (rgx_check_email(con->email) == 1) {
-        return 2;
-    }
-    if (rgx_check_address(con->address) == 1) {
-        return 3;
+        return CONTACT_EMAIL_BAD;
     }
     if (rgx_check_name(con->name) == 1) {
-        return 4;
+        return CONTACT_NAME_BAD;
     }
     if (rgx_check_website(con->website) == 1) {
-        return 5;
+        return CONTACT_WEBSITE_BAD;
     }
 
     sqlite3 *db;
@@ -266,7 +263,7 @@ int db_edit_contact(ContactText *con) {
     sqlite3_finalize(edit_contact_stmt);
     sqlite3_close(db);
 
-    return 0;
+    return CONTACT_GOOD;
 }
 
 int db_save_contact(ContactText *con) {
@@ -275,19 +272,16 @@ int db_save_contact(ContactText *con) {
     int rc;
 
     if (rgx_check_phone(con->phone) == 1) {
-        return 1;
+        return CONTACT_PHONE_BAD;
     }
     if (rgx_check_email(con->email) == 1) {
-        return 2;
-    }
-    if (rgx_check_address(con->address) == 1) {
-        return 3;
+        return CONTACT_EMAIL_BAD;
     }
     if (rgx_check_name(con->name) == 1) {
-        return 4;
+        return CONTACT_NAME_BAD;
     }
     if (rgx_check_website(con->website) == 1) {
-        return 5;
+        return CONTACT_WEBSITE_BAD;
     }
 
     rc = sqlite3_open(g_file_that_is_open, &db);
@@ -336,7 +330,7 @@ int db_save_contact(ContactText *con) {
     sqlite3_finalize(make_new_contact);
     sqlite3_close(db);
 
-    return 0;
+    return CONTACT_GOOD;
 }
 
 int db_init() {

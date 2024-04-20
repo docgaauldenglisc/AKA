@@ -36,15 +36,6 @@ static void setup_main_window(GtkApplication *app);
 int gui_init(int argc, char **argv);
 
 enum {
-    CONTACT_GOOD = 0,
-    CONTACT_PHONE_BAD,
-    CONTACT_EMAIL_BAD,
-    CONTACT_ADDRESS_BAD,
-    CONTACT_NAME_BAD,
-    CONTACT_WEBSITE_BAD,
-};
-
-enum {
     COL_ID = 0, 
     COL_NAME,
     COL_TITLE,
@@ -274,9 +265,6 @@ static void gui_save_contact() {
     case CONTACT_EMAIL_BAD:
         gui_send_error("Email Address not valid");
         break;
-    case CONTACT_ADDRESS_BAD:
-        gui_send_error("Address not valid");
-        break;
     case CONTACT_NAME_BAD:
         gui_send_error("Name not valid");
         break;
@@ -306,9 +294,6 @@ static void gui_edit_contact() {
         break;
     case CONTACT_EMAIL_BAD:
         gui_send_error("Email Address not valid");
-        break;
-    case CONTACT_ADDRESS_BAD:
-        gui_send_error("Address not valid");
         break;
     case CONTACT_NAME_BAD:
         gui_send_error("Name not valid");
@@ -829,6 +814,7 @@ static void setup_main_window(GtkApplication *app) {
     gtk_widget_show_all(g_win);
 
     alloc_frame_size();
+    g_signal_connect(g_win, "size-allocate", G_CALLBACK(alloc_frame_size), NULL);
 }
 
 int gui_init(int argc, char **argv) {
