@@ -4,17 +4,15 @@ The <b>Phone Number</b> of a <b>Contact</b> can be left blank, but when it is en
 the input must look like it is a phone number.
 
 For example, the following are <b>valid</b>:
-(123) 456-7890
-(123)-456-7890
-+1 (123) 456-7890
-+1-939 (123) 456-7890
-123 456 7890
-123 HEY HELO
+01.58.09.16.72
+0473 96 57 47
+05.30.12.97.57
+(25) 955-498
+(021) 3791-260
+(11) 3986-2476
+079 4906 8785
++1 (123) 123-1234
 
 And the following are <b>invalid</b>:
 thisisaphonenumber
 123 hello hello
-1234567890
--1 (123) 456-7890
-+1-1-939 (123) 456-7890
-123 456 7890 home
