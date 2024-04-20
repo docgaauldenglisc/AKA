@@ -33,6 +33,7 @@ enum {
     EMAILEXPLAINED,
     ORGEXPLAINED,
     ADDRESSEXPLAINED,
+    WEBSITEEXPLAINED,
     EXTRAEXPLAINED,
 };
 
@@ -75,6 +76,9 @@ static GtkTreeModel *list_create_model() {
     gtk_tree_store_append(store, &child_iter, &parent_iter);
     gtk_tree_store_set(store, &child_iter, COL_SECTION, "", COL_GUIDE, "Address", COL_FILENAME,
             ADDRESSEXPLAINED, -1);
+    gtk_tree_store_append(store, &child_iter, &parent_iter);
+    gtk_tree_store_set(store, &child_iter, COL_SECTION, "", COL_GUIDE, "Website", COL_FILENAME,
+            WEBSITEEXPLAINED, -1);
     gtk_tree_store_append(store, &child_iter, &parent_iter);
     gtk_tree_store_set(store, &child_iter, COL_SECTION, "", COL_GUIDE, "Extra", COL_FILENAME,
             EXTRAEXPLAINED, -1);
@@ -138,39 +142,55 @@ static void change_guide_to_selection(GtkWidget *selection) {
         switch (file_num) {
         case ACTIONS:
             open_guide("help/actions");
+            gtk_frame_set_label(GTK_FRAME(g_guide_frame), "Actions");
             break;
         case CREATINGACONTACT:
             open_guide("help/creatingacontact");
+            gtk_frame_set_label(GTK_FRAME(g_guide_frame), "Creating a Contact");
             break;
         case DELETINGACONTACT:
             open_guide("help/deletingacontact");
+            gtk_frame_set_label(GTK_FRAME(g_guide_frame), "Deleting a Contact");
             break;
         case EDITINGACONTACT:
             open_guide("help/editingacontact");
+            gtk_frame_set_label(GTK_FRAME(g_guide_frame), "Editing a Contact");
             break;
         case CONTACTINFORMATION:
             open_guide("help/contactinformation");
+            gtk_frame_set_label(GTK_FRAME(g_guide_frame), "Contact Information");
             break;
         case NAMEEXPLAINED:
             open_guide("help/nameexplained");
+            gtk_frame_set_label(GTK_FRAME(g_guide_frame), "Name Explained");
             break;
         case TITLEEXPLAINED:
             open_guide("help/titleexplained");
+            gtk_frame_set_label(GTK_FRAME(g_guide_frame), "Title Explained");
             break;
         case PHONENUMBEREXPLAINED:
             open_guide("help/phonenumberexplained");
+            gtk_frame_set_label(GTK_FRAME(g_guide_frame), "Phone Number Explained");
             break;
         case EMAILEXPLAINED:
             open_guide("help/emailexplained");
+            gtk_frame_set_label(GTK_FRAME(g_guide_frame), "Email Explained");
             break;
         case ORGEXPLAINED:
             open_guide("help/orgexplained");
+            gtk_frame_set_label(GTK_FRAME(g_guide_frame), "Organization Explained");
             break;
         case ADDRESSEXPLAINED:
             open_guide("help/addressexplained");
+            gtk_frame_set_label(GTK_FRAME(g_guide_frame), "Address Explained");
+            break;
+        case WEBSITEEXPLAINED:
+            open_guide("help/websiteexplained");
+            gtk_frame_set_label(GTK_FRAME(g_guide_frame), "Website Explained");
             break;
         case EXTRAEXPLAINED:
             open_guide("help/extraexplained");
+            gtk_frame_set_label(GTK_FRAME(g_guide_frame), "Extra Explained");
             break;
         }
     }

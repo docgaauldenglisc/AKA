@@ -1,0 +1,22 @@
+<span weight='bold' size='xx-large'>Website</span>
+
+The <b>Website</b> is for storing a website related to your <b>Contact</b>.
+It must be a <b>Link</b>, or it will not be accepted.
+
+The following examples are <b>Good</b>:
+website.com
+website.ca.gov
+website.com.au
+website.org
+www.website.com
+docs.website.com
+https://website.ca.gov/
+https://website.com/
+website.com/index.html
+http://website.com/?i=1
+
+And the following are <b>Bad</b>:
+textextextext
+website.
+http://
+website.a

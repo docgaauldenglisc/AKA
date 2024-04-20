@@ -25,15 +25,13 @@ char *db_get(char *col, int row);
 int db_max_id();
 int db_init();
 
-static int search_set_count(void *data, int argc, char **argv, char **az_col_name) {
-    //This will loop for each result
+static int search_set_count() {
     g_ids.id_amount++;
 
     return 0;
 }
 
 static int search_set_ids(void *data, int argc, char **argv, char **az_col_name) {
-    //This will loop for each result
     g_ids.ids[g_search_count] = atoi(argv[0]);
 
     g_search_count++;
@@ -57,11 +55,11 @@ idList db_search(char *query, char *col) {
     g_ids.id_amount = 0;
     g_ids.ids = NULL;
     char *err = 0;
-    char *stmt_char = sqlite3_expanded_sql(search_stmt);
-    sqlite3_exec(db, stmt_char, search_set_count, 0, &err);
+    search_query = sqlite3_expanded_sql(search_stmt);
+    sqlite3_exec(db, search_query, search_set_count, 0, &err);
 
     g_ids.ids = (int *)malloc(g_ids.id_amount * sizeof(int));
-    sqlite3_exec(db, stmt_char, search_set_ids, 0, &err);
+    sqlite3_exec(db, search_query, search_set_ids, 0, &err);
 
     sqlite3_finalize(search_stmt);
     sqlite3_close(db);
