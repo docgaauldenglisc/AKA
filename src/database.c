@@ -228,7 +228,7 @@ int db_edit_contact(ContactText *con) {
         return 4;
     }
     if (rgx_check_website(con->website) == 1) {
-        return 4;
+        return 5;
     }
 
     sqlite3 *db;

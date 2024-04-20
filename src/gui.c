@@ -740,13 +740,13 @@ static void setup_title_bar(GtkWidget *main_grid) {
 }
 
 static void setup_action_box(GtkWidget *main_grid) {
-    GtkWidget *action_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    GtkWidget *action_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
     GtkWidget *new_contact_button = gtk_button_new_with_label("New Contact");
     GtkWidget *edit_contact_button = gtk_button_new_with_label("Edit Contact");
     GtkWidget *delete_contact_button = gtk_button_new_with_label("Delete Contact");
-    gtk_box_pack_start(GTK_BOX(action_box), new_contact_button, FALSE, TRUE, 5);
-    gtk_box_pack_start(GTK_BOX(action_box), edit_contact_button, FALSE, TRUE, 5);
-    gtk_box_pack_start(GTK_BOX(action_box), delete_contact_button, FALSE, TRUE, 5);
+    gtk_box_pack_start(GTK_BOX(action_box), new_contact_button, FALSE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(action_box), edit_contact_button, FALSE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(action_box), delete_contact_button, FALSE, TRUE, 0);
 
     gtk_grid_attach(GTK_GRID(main_grid), action_box, 0, 1, 2, 1);
     gtk_container_set_border_width(GTK_CONTAINER(action_box), 5);
