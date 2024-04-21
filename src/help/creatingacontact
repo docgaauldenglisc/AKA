@@ -1,6 +1,6 @@
 <span weight='bold' size='xx-large'>Creating a contact</span>
 
-To create a <b>Contact</b>, you can click the <b>"+" button</b> above the <b>Search Bar</b>.
+To create a <b>Contact</b>, you can click the <b>New Contact</b> button.
 
 After that, the <b>New Contact View</b> will pop up in the <b>Main View</b>,
 and you can enter your <b>Contact</b> into the <b>Entry Bars</b>.
@@ -9,4 +9,4 @@ After you are done entering your <b>Contact</b>, you can press the <b>Save Butto
 and the <b>Contact</b> will be saved.
 
 Additionally, to open the <b>New Contact View</b> you can click on the <b>File</b> menu,
-and click the <b>New Contact</b> button.
+and click the <b>New Contact</b> item.

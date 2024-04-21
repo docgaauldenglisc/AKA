@@ -28,7 +28,6 @@ bool match_str(const char *str, const char *pattern) {
     int rc;
     pcre *re;
     int error_offset;
-    
     re = pcre_compile(pattern, 0, &error, &error_offset, NULL);
     rc = pcre_exec(re, NULL, str, strlen(str), 0, 0, NULL, 0);
     if (rc >= 0) {
@@ -45,7 +44,7 @@ int rgx_check_website(char *website) {
     if (string_is_empty(website)) {
         return GOOD;
     }
-    const char *pattern = "^(http(s|):\\/\\/|).+\\.[\\w]{2,}(|\\.[\\w]{2,})(\\/|)(\\S+|)$";
+    const char *pattern = "^(http(s|):\\/\\/|).+\\.[\\w]{2,}(|\\.[\\w]{2,})(\\/|)(\\S+|)[ ]*$";
     if (match_str(website, pattern)) {
         return GOOD;
     }
@@ -60,7 +59,7 @@ int rgx_check_filename(char *filename) {
     if (string_is_empty(filename)) {
         return BAD;
     }
-    const char *pattern = "^.+\\.db$";
+    const char *pattern = "^.+\\.db[ ]*$";
     if (match_str(filename, pattern)) {
         return GOOD;
     }
@@ -77,7 +76,7 @@ int rgx_check_phone(char *phone) {
     if (string_is_empty(phone)) {
         return GOOD;
     }
-    const char *pattern = "^[\\s\\.\\(\\)\\-\\d]+$";
+    const char *pattern = "^[\\s\\.\\(\\)\\-\\d]+[ ]*$";
     if (match_str(phone, pattern)) {
         return GOOD;
     }
@@ -90,7 +89,7 @@ int rgx_check_email(char *email) {
     if (string_is_empty(email)) {
         return GOOD;
     }
-    const char *pattern = "^\\w+@\\w+(\\.[a-zA-Z]+|\\.[a-zA-Z]+\\.\\w{2})$";
+    const char *pattern = "^[\\w.]+@\\w+(\\.[a-zA-Z]+|\\.[a-zA-Z]+\\.\\w{2,})[ ]*$";
     if (match_str(email, pattern)) {
         return GOOD;
     }

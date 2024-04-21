@@ -6,7 +6,6 @@
 #include "gui.h"
 
 GtkWidget *g_text_view;
-GtkWidget *g_guide_frame;
 
 static GtkTreeModel *list_create_model();
 static GtkWidget *list_create_view();
@@ -142,101 +141,80 @@ static void change_guide_to_selection(GtkWidget *selection) {
         switch (file_num) {
         case ACTIONS:
             open_guide("help/actions");
-            gtk_frame_set_label(GTK_FRAME(g_guide_frame), "Actions");
             break;
         case CREATINGACONTACT:
             open_guide("help/creatingacontact");
-            gtk_frame_set_label(GTK_FRAME(g_guide_frame), "Creating a Contact");
             break;
         case DELETINGACONTACT:
             open_guide("help/deletingacontact");
-            gtk_frame_set_label(GTK_FRAME(g_guide_frame), "Deleting a Contact");
             break;
         case EDITINGACONTACT:
             open_guide("help/editingacontact");
-            gtk_frame_set_label(GTK_FRAME(g_guide_frame), "Editing a Contact");
             break;
         case CONTACTINFORMATION:
             open_guide("help/contactinformation");
-            gtk_frame_set_label(GTK_FRAME(g_guide_frame), "Contact Information");
             break;
         case NAMEEXPLAINED:
             open_guide("help/nameexplained");
-            gtk_frame_set_label(GTK_FRAME(g_guide_frame), "Name Explained");
             break;
         case TITLEEXPLAINED:
             open_guide("help/titleexplained");
-            gtk_frame_set_label(GTK_FRAME(g_guide_frame), "Title Explained");
             break;
         case PHONENUMBEREXPLAINED:
             open_guide("help/phonenumberexplained");
-            gtk_frame_set_label(GTK_FRAME(g_guide_frame), "Phone Number Explained");
             break;
         case EMAILEXPLAINED:
             open_guide("help/emailexplained");
-            gtk_frame_set_label(GTK_FRAME(g_guide_frame), "Email Explained");
             break;
         case ORGEXPLAINED:
             open_guide("help/orgexplained");
-            gtk_frame_set_label(GTK_FRAME(g_guide_frame), "Organization Explained");
             break;
         case ADDRESSEXPLAINED:
             open_guide("help/addressexplained");
-            gtk_frame_set_label(GTK_FRAME(g_guide_frame), "Address Explained");
             break;
         case WEBSITEEXPLAINED:
             open_guide("help/websiteexplained");
-            gtk_frame_set_label(GTK_FRAME(g_guide_frame), "Website Explained");
             break;
         case EXTRAEXPLAINED:
             open_guide("help/extraexplained");
-            gtk_frame_set_label(GTK_FRAME(g_guide_frame), "Extra Explained");
             break;
         }
     }
 }
 
 void help_open_window() {
-    GtkWidget *win;
-        GtkWidget *help_box;
-            GtkWidget *scrolled_list_container;
-                GtkWidget *list_view;
-                GtkTreeSelection *selection;
-            //g_guide_frame;
-                GtkWidget *scrolled_text_container;
-                //g_text_view;
-
-    win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    help_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    scrolled_list_container = gtk_scrolled_window_new(NULL, NULL);
-    list_view = list_create_view();
-    g_guide_frame = gtk_frame_new("");
-    scrolled_text_container = gtk_scrolled_window_new(NULL, NULL);
-    g_text_view = gtk_text_view_new();
-
+    GtkWidget *list_view = list_create_view();
     gtk_widget_set_hexpand(list_view, TRUE);
 
-    gtk_frame_set_label_align(GTK_FRAME(g_guide_frame), 0.5, 1.0);
-
+    g_text_view = gtk_text_view_new();
     gtk_widget_set_hexpand(g_text_view, TRUE);
     gtk_text_view_set_editable(GTK_TEXT_VIEW(g_text_view), FALSE);
     gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(g_text_view), FALSE);
+    gtk_container_set_border_width(GTK_CONTAINER(g_text_view), 5);
 
-    selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(list_view));
+    GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(list_view));
     gtk_tree_selection_set_mode(selection, GTK_SELECTION_SINGLE);
     g_signal_connect(selection, "changed", G_CALLBACK(change_guide_to_selection), NULL);
 
     gtk_tree_view_expand_all(GTK_TREE_VIEW(list_view));
 
+    GtkWidget *scrolled_list_container = gtk_scrolled_window_new(NULL, NULL);
     gtk_container_add(GTK_CONTAINER(scrolled_list_container), list_view);
-    gtk_container_add(GTK_CONTAINER(help_box), scrolled_list_container);
-    gtk_container_add(GTK_CONTAINER(g_guide_frame), scrolled_text_container);
+
+    GtkWidget *scrolled_text_container = gtk_scrolled_window_new(NULL, NULL);
     gtk_container_add(GTK_CONTAINER(scrolled_text_container), g_text_view);
-    gtk_container_add(GTK_CONTAINER(help_box), g_guide_frame);
+
+    GtkWidget *help_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    gtk_container_add(GTK_CONTAINER(help_box), scrolled_list_container);
+    gtk_container_add(GTK_CONTAINER(help_box), scrolled_text_container);
+    gtk_container_set_border_width(GTK_CONTAINER(help_box), 5);
+
+    GtkWidget *win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_container_add(GTK_CONTAINER(win), help_box);
 
     gtk_window_set_default_size(GTK_WINDOW(win), WINDOW_WIDTH, WINDOW_HEIGHT);
     gtk_widget_show_all(win);
 
-    open_guide("../src/help/actions");
+    //Open guide that's selected when you open help
+    open_guide("help/actions");
 }

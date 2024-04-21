@@ -57,7 +57,7 @@ after the **Help** menu item is clicked:
 
 ## Creating a Contact
 
-To create a **Contact**, you can click the **"+" button** above the **Search Bar**.
+To create a **Contact**, you can click the **New Contact** button.
 
 After that, the **New Contact View** will pop up in the **Main View**,
 and you can enter your **Contact** into the **Entry Bars**.
@@ -65,13 +65,13 @@ and you can enter your **Contact** into the **Entry Bars**.
 After you are done entering your **Contact** you can press the **Save Button**
 and the **Contact** will be saved.
 
-Additionally, to open the **New Contact View** you can click on the **File** menu,
-and click the **New Contact** button.
+Additionally, to open the **New Contact View** you can click on the **Edit** menu,
+and click the **New Contact** item.
 
 ## Editing a Contact
 
 To edit a **Contact**, select it in the **List**,
-and then click on the **Edit** button.
+and then click on the **Edit Contact** button in the **Main View**.
 
 After clicking the **Edit** button, 
 the **Edit Contact View** will appear in the **Main View**,
@@ -82,7 +82,8 @@ When you press the **Save Button** at the bottom of the **Main View**,
 the current values inside of the **Entry Bars** will be saved. 
 
 Additionally, to edit a contact, you can click on the **Edit** Menu,
-and then click the **Edit Contact** button.
+and then click the **Edit Contact** item,
+or you can click on the **Edit Contact** button in the **Action Box**.
 
 ## Deleting a Contact
 
@@ -93,7 +94,7 @@ and delete the **Contact**.
 
 Additionally, after a **Contact** is selected on the **List**, 
 you can click on the **Edit** menu,
-and click the **Delete Contact** Button.
+and click the **Delete Contact** item.
 
 ## Backing up a Save
 

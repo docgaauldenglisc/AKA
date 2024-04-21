@@ -1,7 +1,11 @@
 <span weight='bold' size='xx-large'>Phone Number</span>
 
 The <b>Phone Number</b> of a <b>Contact</b> can be left blank, but when it is entered,
-the input must look like it is a phone number.
+the input must look like it is a phone number, i.e. it's made of numbers and can be split up,
+in any way that makes sense.
+
+This means that you can't enter phone numbers with letters in them. Convert them to numbers,
+and use that instead.
 
 For example, the following are <b>valid</b>:
 01.58.09.16.72

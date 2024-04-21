@@ -740,6 +740,7 @@ static void setup_list_frame(GtkWidget *main_grid) {
     gtk_widget_set_hexpand(list_scroller, TRUE);
     gtk_widget_set_vexpand(list_scroller, TRUE);
 
+    //Action/Search box
     GtkWidget *list_grid = gtk_grid_new();
     GtkWidget *search_entry = gtk_search_entry_new();
     GtkWidget *refresh_button = gtk_button_new_from_icon_name("view-refresh-symbolic",
@@ -750,7 +751,6 @@ static void setup_list_frame(GtkWidget *main_grid) {
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(search_opts_box), "Phone Number");
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(search_opts_box), "Email");
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(search_opts_box), "Org");
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(search_opts_box), "Address");
     gtk_widget_set_hexpand(search_entry, TRUE);
     gtk_grid_attach(GTK_GRID(list_grid), search_entry, 0, 0, 1, 1);
     gtk_grid_attach(GTK_GRID(list_grid), search_opts_box, 1, 0, 1, 1);
@@ -761,7 +761,6 @@ static void setup_list_frame(GtkWidget *main_grid) {
 
     GtkWidget *list_frame = gtk_frame_new("List");
     gtk_container_add(GTK_CONTAINER(list_frame), list_grid);
-
     gtk_widget_set_hexpand(list_frame, TRUE);
     gtk_widget_set_vexpand(list_frame, TRUE);
     gtk_frame_set_label_align(GTK_FRAME(list_frame), 0.5, 0);
@@ -814,7 +813,7 @@ int gui_init(int argc, char **argv) {
 
     GtkApplication *app;
     int status;
-    app = gtk_application_new("com.com.com", G_APPLICATION_DEFAULT_FLAGS);
+    app = gtk_application_new("com.github.docgaauldenglisc.aka", G_APPLICATION_DEFAULT_FLAGS);
     g_signal_connect(app, "activate", G_CALLBACK(setup_main_window), NULL);
     status = g_application_run(G_APPLICATION(app), argc, argv);
     g_object_unref(app);
