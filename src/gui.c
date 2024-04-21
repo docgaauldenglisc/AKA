@@ -357,7 +357,6 @@ static void switch_to_edit_contact_frame() {
     GtkWidget *extra_label      = gtk_label_new("Extra Info: ");
     gtk_label_set_xalign(GTK_LABEL(extra_label), 1);
     gtk_widget_set_hexpand(g_entries.extra, TRUE);
-    gtk_widget_set_vexpand(g_entries.extra, TRUE);
 
     g_entries.photoloc = gtk_file_chooser_button_new("Photo Location", GTK_FILE_CHOOSER_ACTION_OPEN);
     if (strcmp(g_contact.photoloc, "") == 0) {
@@ -585,7 +584,6 @@ static void switch_to_new_contact_frame() {
     extra_label     = gtk_label_new("Extra Info: ");
     gtk_label_set_xalign(GTK_LABEL(extra_label), 1);
     gtk_widget_set_hexpand(g_entries.extra, TRUE);
-    gtk_widget_set_vexpand(g_entries.extra, TRUE);
 
     g_entries.photoloc = gtk_file_chooser_button_new("Photo", GTK_FILE_CHOOSER_ACTION_OPEN);
     photoloc_label  = gtk_label_new("Photo: ");
