@@ -18,21 +18,14 @@ To compile from source, first you need the following dependencies:
 
 `cmake` (version 3.10 or higher)
 
-Then it is recommended that you create a **build** folder:
+To build from source, run the following:
 
-`mkdir build`
-
-And then navigate inside of it:
-
-`cd build`
-
-Then, run **cmake** on the source directory: 
-
-`cmake ../src`
-
-After that, run the **make** command:
-
-`make`
+```sh
+mkdir build
+cd build
+cmake ../src
+make
+```
 
 And then the binary will be compiled into the **build** directory.
 
