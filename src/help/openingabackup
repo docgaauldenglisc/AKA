@@ -1,0 +1,9 @@
+<span weight='bold' size='xx-large'>Opening a Save</span>
+
+To back up a <b>Save</b>, click on the <b>File</b> menu,
+click on the <b>Open Contacts</b> item,
+and navigate to the save that you would like to open.
+
+<b>Saves</b> must have a <b>.db</b> file ending,
+and they can be created by using <b>Backup Contacts</b> in the
+<b>File</b> menu.

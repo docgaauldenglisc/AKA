@@ -1,0 +1,7 @@
+<span weight='bold' size='xx-large'>Making a Save</span>
+
+To back up a <b>Save</b>, click on the <b>File</b> menu,
+then on the <b>Backup Contacts</b> item, 
+and then navigate to where you would like to save your <b>Contacts</b>.
+
+The <b>File Name</b> must end in <b>.db</b> or it will not save.

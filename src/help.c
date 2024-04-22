@@ -34,6 +34,8 @@ enum {
     ADDRESSEXPLAINED,
     WEBSITEEXPLAINED,
     EXTRAEXPLAINED,
+    MAKINGABACKUP,
+    OPENINGABACKUP,
 };
 
 static GtkTreeModel *list_create_model() {
@@ -81,6 +83,15 @@ static GtkTreeModel *list_create_model() {
     gtk_tree_store_append(store, &child_iter, &parent_iter);
     gtk_tree_store_set(store, &child_iter, COL_SECTION, "", COL_GUIDE, "Extra", COL_FILENAME,
             EXTRAEXPLAINED, -1);
+    gtk_tree_store_append(store, &parent_iter, NULL);
+    gtk_tree_store_set(store, &parent_iter, COL_SECTION, "Backups", COL_GUIDE, "",
+            COL_FILENAME, CONTACTINFORMATION, -1);
+    gtk_tree_store_append(store, &child_iter, &parent_iter);
+    gtk_tree_store_set(store, &child_iter, COL_SECTION, "", COL_GUIDE, "Making a Save", COL_FILENAME,
+            MAKINGABACKUP, -1);
+    gtk_tree_store_append(store, &child_iter, &parent_iter);
+    gtk_tree_store_set(store, &child_iter, COL_SECTION, "", COL_GUIDE, "Opening a Save", COL_FILENAME,
+            OPENINGABACKUP, -1);
 
     GtkTreeModel *model = GTK_TREE_MODEL(store);
     return model;
@@ -177,6 +188,12 @@ static void change_guide_to_selection(GtkWidget *selection) {
             break;
         case EXTRAEXPLAINED:
             open_guide("help/extraexplained");
+            break;
+        case MAKINGABACKUP:
+            open_guide("help/makingabackup");
+            break;
+        case OPENINGABACKUP:
+            open_guide("help/openingabackup");
             break;
         }
     }

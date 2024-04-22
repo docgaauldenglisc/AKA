@@ -1,0 +1,11 @@
+<span weight='bold' size='xx-large'>Backups</span>
+
+<b>Backups</b> are <b>Saves</b> or <b>Files</b>,
+that contain <b>Contacts</b> someone has saved.
+
+They end in <b>.db</b>.
+
+You can make a <b>Save</b> open by default,
+by replacing the <b>Default Save</b> (<b>Contacts.db</b>),
+
+in the directory with the AKA executable inside of it.
