@@ -123,6 +123,8 @@ static char *read_file(FILE *file, char *loc) {
         puts("Can't open file!");
         return NULL;
     }
+    //gets everything in the file until it reaches NULL, the end of the file
+    //puts it into the output parameter "article"
     getdelim(&article, &len, '\0', file);
     return article;
 }
@@ -203,12 +205,14 @@ void help_open_window() {
     GtkWidget *list_view = list_create_view();
     gtk_widget_set_hexpand(list_view, TRUE);
 
+    //Where article can be seen
     g_text_view = gtk_text_view_new();
     gtk_widget_set_hexpand(g_text_view, TRUE);
     gtk_text_view_set_editable(GTK_TEXT_VIEW(g_text_view), FALSE);
     gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(g_text_view), FALSE);
     gtk_container_set_border_width(GTK_CONTAINER(g_text_view), 5);
 
+    //handle selections so I can change the guide
     GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(list_view));
     gtk_tree_selection_set_mode(selection, GTK_SELECTION_SINGLE);
     g_signal_connect(selection, "changed", G_CALLBACK(change_guide_to_selection), NULL);
@@ -221,6 +225,7 @@ void help_open_window() {
     GtkWidget *scrolled_text_container = gtk_scrolled_window_new(NULL, NULL);
     gtk_container_add(GTK_CONTAINER(scrolled_text_container), g_text_view);
 
+    //box for the main window
     GtkWidget *help_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_container_add(GTK_CONTAINER(help_box), scrolled_list_container);
     gtk_container_add(GTK_CONTAINER(help_box), scrolled_text_container);

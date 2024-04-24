@@ -353,6 +353,7 @@ int db_init() {
                                   "PHOTOLOC TEXT " \
                                   ");";
 
+    //Run the schema creation command
     sqlite3_exec(db, database_schema, NULL, 0, &err);
 
     sqlite3_close(db);

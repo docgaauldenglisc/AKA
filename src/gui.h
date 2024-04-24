@@ -3,7 +3,6 @@
 
 #include <gtk/gtk.h>
 
-
 typedef struct {
     GtkWidget *name;
     GtkWidget *title;

@@ -803,6 +803,7 @@ static void setup_main_window(GtkApplication *app) {
     gtk_widget_show_all(g_win);
 
     alloc_frame_size();
+    //alloc frame size when window resized
     g_signal_connect(g_win, "size-allocate", G_CALLBACK(alloc_frame_size), NULL);
 }
 
@@ -811,6 +812,7 @@ int gui_init(int argc, char **argv) {
 
     GtkApplication *app;
     int status;
+    //Start it
     app = gtk_application_new("com.github.docgaauldenglisc.aka", G_APPLICATION_DEFAULT_FLAGS);
     g_signal_connect(app, "activate", G_CALLBACK(setup_main_window), NULL);
     status = g_application_run(G_APPLICATION(app), argc, argv);
